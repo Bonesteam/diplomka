@@ -15,11 +15,11 @@ model:
   activation: "relu"
 
 training:
-  epochs: 120
+  epochs: 100
   batch_size: 32
   learning_rate: 0.0008
   patience: 15
-  reduce_patience: 8
+  reduce_patience: 7
 
 paths:
   saved_models: "saved_models/"
