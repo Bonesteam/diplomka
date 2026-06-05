@@ -51,10 +51,27 @@ def compute_class_weight(y):
 def run_experiment(name, cfg, config, dry_run=False, epochs_override=None):
     print(f"\n=== Experiment: {name} ===")
     # Load & split
+    test_path = config["data"].get("test_path")
+    has_test = False
+    if test_path and os.path.exists(test_path):
+        try:
+            X_test, y_test, _ = load_data(test_path)
+            has_test = True
+        except Exception as e:
+            print(f"Error loading test file: {e}")
+
     X, y, _ = load_data(config["data"]["path"]) if os.path.exists(config["data"]["path"]) else load_data("data/plant_health_biosensor_15k.csv")
-    X_train, X_val, X_test, y_train, y_val, y_test = split_data(
-        X, y, test_size=config["data"]["test_size"], val_size=config["data"]["val_size"], random_state=config["data"]["random_state"]
-    )
+    
+    from sklearn.model_selection import train_test_split
+    if has_test:
+        X_train, X_val, y_train, y_val = train_test_split(
+            X, y, test_size=config["data"].get("val_size", 0.2), random_state=config["data"]["random_state"], stratify=y
+        )
+    else:
+        X_train, X_val, X_test, y_train, y_val, y_test = split_data(
+            X, y, test_size=config["data"]["test_size"], val_size=config["data"]["val_size"], random_state=config["data"]["random_state"]
+        )
+
     X_train_sc, scaler = fit_transform(X_train, config["preprocessing"]["scaler"])
     X_val_sc = transform(X_val, scaler)
     X_test_sc = transform(X_test, scaler)
