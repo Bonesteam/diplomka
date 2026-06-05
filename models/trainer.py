@@ -1,7 +1,7 @@
 import numpy as np, os, tensorflow as tf
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 
-def train_model(model, X_train, y_train, X_val, y_val, config, save_path):
+def train_model(model, X_train, y_train, X_val, y_val, config, save_path, custom_callbacks=None):
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     classes = np.unique(y_train)
     total = len(y_train)
@@ -17,6 +17,8 @@ def train_model(model, X_train, y_train, X_val, y_val, config, save_path):
         ModelCheckpoint(save_path, monitor=monitor_acc, save_best_only=True, verbose=0),
         ReduceLROnPlateau(monitor=monitor_loss, factor=0.5, patience=7, verbose=1),
     ]
+    if custom_callbacks:
+        callbacks.extend(custom_callbacks)
     history = model.fit(
         X_train, y_train, validation_data=(X_val, y_val) if has_val else None,
         epochs=config["training"]["epochs"],

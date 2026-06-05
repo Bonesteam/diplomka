@@ -7,7 +7,7 @@ import numpy as np
 NORM_MARGIN_FRAC = 0.08
 
 # Температура softmax — >1 зменшує надмірну впевненість моделі
-MODEL_TEMPERATURE = 2.8
+MODEL_TEMPERATURE = 2.0
 
 # Максимальна відображувана впевненість у UI
 MAX_DISPLAY_CONFIDENCE = 88.0
@@ -86,7 +86,8 @@ def rule_probs_from_stress(n_clear, stress_total):
     elif n_clear == 2 or stress_total >= 1.3:
         s[:] = [0.12, 0.48, 0.28, 0.12]
     elif n_clear == 1 or stress_total >= 0.45:
-        s[:] = [0.06, 0.22, 0.46, 0.26]
+        # 1 чітке відхилення — найбільш характерно для помірного стресу
+        s[:] = [0.06, 0.46, 0.28, 0.20]
     else:
         s[:] = [0.04, 0.08, 0.18, 0.70]
 

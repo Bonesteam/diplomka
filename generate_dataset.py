@@ -191,16 +191,16 @@ def main(original_path: str, output_path: str, total: int):
     class_stats = compute_class_stats(df_orig)
 
     # 3. Визначення кількості синтетичних зразків для кожного класу
-    # Фінальний обсяг: total = n_orig + n_synth + n_hard
+    # Фінальний обсяг: total = n_synth + n_hard (оригінальні не додаємо, щоб уникнути витоку в тест)
     n_hard = 800
-    n_synth = total - n_orig - n_hard
+    n_synth = total - n_hard
     
     if n_synth < 0:
         n_synth = 0
-        n_hard = max(0, total - n_orig)
+        n_hard = total
         
     print(f"\nЦільовий обсяг датасету: {total} рядків")
-    print(f"  - Реальні зразки: {n_orig}")
+    print(f"  - Реальні зразки: 0 (збережено окремо як незалежний тест)")
     print(f"  - Прикордонні зразки (Hard): {n_hard}")
     print(f"  - Необхідно згенерувати синтетичних: {n_synth}")
 
@@ -230,8 +230,8 @@ def main(original_path: str, output_path: str, total: int):
     # 5. Додавання прикордонних зразків (Hard)
     df_hard = add_hard_samples(class_stats, n_samples=n_hard)
 
-    # 6. Об'єднання: оригінальні + синтетичні + прикордонні
-    df_final = pd.concat([df_orig, df_synth, df_hard], ignore_index=True)
+    # 6. Об'єднання: тільки синтетичні + прикордонні (для незалежності тесту)
+    df_final = pd.concat([df_synth, df_hard], ignore_index=True)
 
     # 7. Перемішування
     df_final = df_final.sample(frac=1, random_state=RANDOM_SEED).reset_index(drop=True)

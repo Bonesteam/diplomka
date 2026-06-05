@@ -1,26 +1,26 @@
 data:
-  path: "data/plant_health_biosensor_15k.csv"
-  test_size: 0.2
-  val_size: 0.0
+  path: data/plant_health_biosensor_15k.csv
   random_state: 42
-
-preprocessing:
-  scaler: "standard"
-  apply_smote: true
-
+  test_path: plant_health_biosensor_dataset.csv
+  test_size: 0.2
+  val_size: 0.2
 model:
-  type: "mlp"
-  hidden_layers: [128, 64, 32]
+  activation: relu
   dropout: 0.3
-  activation: "relu"
-
+  hidden_layers:
+  - 128
+  - 64
+  - 32
+  type: mlp
+paths:
+  results: results/
+  saved_models: saved_models/
+preprocessing:
+  apply_smote: true
+  scaler: standard
 training:
-  epochs: 100
   batch_size: 32
+  epochs: 100
   learning_rate: 0.0008
   patience: 15
   reduce_patience: 7
-
-paths:
-  saved_models: "saved_models/"
-  results: "results/"

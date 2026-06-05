@@ -451,23 +451,62 @@ class PlantHealthApp(tk.Tk):
     def _build_train_tab(self):
         t=self.tab_train
         top=tk.Frame(t,bg=BG); top.pack(fill="x",padx=12,pady=10)
+        
+        # Load default values from config.yaml
+        import yaml
+        cfg = {}
+        if os.path.exists("config.yaml"):
+            try:
+                with open("config.yaml") as f:
+                    cfg = yaml.safe_load(f) or {}
+            except Exception: pass
+            
+        train_path = cfg.get("data", {}).get("path", DATA_SRC)
+        test_path = cfg.get("data", {}).get("test_path", "plant_health_biosensor_dataset.csv")
+        epochs = str(cfg.get("training", {}).get("epochs", 100))
+        batch_size = str(cfg.get("training", {}).get("batch_size", 32))
+        lr = str(cfg.get("training", {}).get("learning_rate", 0.0008))
+        patience = str(cfg.get("training", {}).get("patience", 15))
+        val_size = str(cfg.get("data", {}).get("val_size", 0.20))
+
         card_data=self._card(top,"Датасет")
-        row=tk.Frame(card_data,bg=CARD); row.pack(fill="x")
-        tk.Label(row,text="Шлях до CSV:",bg=CARD,fg=TEXT,font=("Segoe UI",9)).pack(side="left")
-        self.var_csv=tk.StringVar(value=DATA_SRC)
-        tk.Entry(row,textvariable=self.var_csv,width=52,font=("Segoe UI",9),relief="flat",
+        
+        # Row 1: Train/Val CSV
+        row1=tk.Frame(card_data,bg=CARD); row1.pack(fill="x", pady=2)
+        tk.Label(row1,text="Train/Val CSV:",bg=CARD,fg=TEXT,font=("Segoe UI",9), width=12, anchor="w").pack(side="left")
+        self.var_csv=tk.StringVar(value=train_path)
+        tk.Entry(row1,textvariable=self.var_csv,width=52,font=("Segoe UI",9),relief="flat",
                  bg="#F0EFF8",highlightthickness=1,highlightbackground=BORDER).pack(side="left",padx=6)
-        tk.Button(row,text="Огляд…",bg=BG,fg=ACCENT,font=("Segoe UI",9),relief="flat",cursor="hand2",
+        tk.Button(row1,text="Огляд…",bg=BG,fg=ACCENT,font=("Segoe UI",9),relief="flat",cursor="hand2",
                   command=self._browse_csv).pack(side="left")
+                  
+        # Row 2: Test CSV
+        row2=tk.Frame(card_data,bg=CARD); row2.pack(fill="x", pady=2)
+        tk.Label(row2,text="Test CSV:",bg=CARD,fg=TEXT,font=("Segoe UI",9), width=12, anchor="w").pack(side="left")
+        self.var_test_csv=tk.StringVar(value=test_path)
+        tk.Entry(row2,textvariable=self.var_test_csv,width=52,font=("Segoe UI",9),relief="flat",
+                 bg="#F0EFF8",highlightthickness=1,highlightbackground=BORDER).pack(side="left",padx=6)
+        tk.Button(row2,text="Огляд…",bg=BG,fg=ACCENT,font=("Segoe UI",9),relief="flat",cursor="hand2",
+                  command=self._browse_test_csv).pack(side="left")
+
         card_hp=self._card(top,"Гіперпараметри"); hp_grid=tk.Frame(card_hp,bg=CARD); hp_grid.pack(fill="x")
-        params=[("Епохи:","100"),("Batch size:","32"),("Learning rate:","0.001"),("Patience:","15")]
+        params=[
+            ("Епохи:", epochs),
+            ("Batch size:", batch_size),
+            ("Learning rate:", lr),
+            ("Patience:", patience),
+            ("Val split:", val_size)
+        ]
         self.hp_vars=[]
-        for col,(label,default) in enumerate(params):
-            tk.Label(hp_grid,text=label,bg=CARD,fg=MUTED,font=("Segoe UI",9)).grid(row=0,column=col*2,sticky="w",padx=(0 if col==0 else 16,4))
+        for i, (label, default) in enumerate(params):
+            row = i // 4
+            col = i % 4
+            tk.Label(hp_grid,text=label,bg=CARD,fg=MUTED,font=("Segoe UI",9)).grid(row=row,column=col*2,sticky="w",padx=(0 if col==0 else 16,4),pady=4)
             var=tk.StringVar(value=default)
             tk.Entry(hp_grid,textvariable=var,width=8,font=("Segoe UI",10),relief="flat",
-                     bg="#F0EFF8",highlightthickness=1,highlightbackground=BORDER).grid(row=0,column=col*2+1,sticky="w")
+                     bg="#F0EFF8",highlightthickness=1,highlightbackground=BORDER).grid(row=row,column=col*2+1,sticky="w",pady=4)
             self.hp_vars.append(var)
+            
         self.var_smote=tk.BooleanVar(value=True)
         tk.Checkbutton(card_hp,text="Застосувати SMOTE (балансування класів)",variable=self.var_smote,
                        bg=CARD,fg=TEXT,font=("Segoe UI",9),activebackground=CARD).pack(anchor="w",pady=(8,0))
@@ -488,6 +527,10 @@ class PlantHealthApp(tk.Tk):
     def _browse_csv(self):
         path=filedialog.askopenfilename(filetypes=[("CSV файли","*.csv"),("Всі файли","*.*")])
         if path: self.var_csv.set(path)
+
+    def _browse_test_csv(self):
+        path=filedialog.askopenfilename(filetypes=[("CSV файли","*.csv"),("Всі файли","*.*")])
+        if path: self.var_test_csv.set(path)
 
     def _log(self, msg, tag=None):
         self.log.configure(state="normal")
@@ -536,10 +579,34 @@ class PlantHealthApp(tk.Tk):
             config["training"]["batch_size"]=int(self.hp_vars[1].get())
             config["training"]["learning_rate"]=float(self.hp_vars[2].get())
             config["training"]["patience"]=int(self.hp_vars[3].get())
+            config["data"]["val_size"]=float(self.hp_vars[4].get())
+            config["data"]["path"]=csv_src
+            
+            test_csv=self.var_test_csv.get().strip()
+            config["data"]["test_path"]=test_csv
             config["preprocessing"]["apply_smote"]=self.var_smote.get()
+            
+            # Save updated config
+            with open("config.yaml", "w") as f:
+                yaml.safe_dump(config, f)
+                
             os.makedirs("results",exist_ok=True); os.makedirs("saved_models",exist_ok=True)
             self._log("\n[1/7] Завантаження даних...","yellow")
-            X,y,_=load_data(DATA_DST); self._log(f"  Зразків: {X.shape[0]}, ознак: {X.shape[1]}")
+            
+            # Load main Train/Val dataset
+            X,y,_=load_data(DATA_DST)
+            self._log(f"  Зразків Train/Val: {X.shape[0]}, ознак: {X.shape[1]}")
+            
+            # Load Test dataset
+            has_test_file = False
+            if test_csv and os.path.exists(test_csv):
+                try:
+                    X_test_raw, y_test, _ = load_data(test_csv)
+                    self._log(f"  Зразків Test (з файлу {test_csv}): {X_test_raw.shape[0]}")
+                    has_test_file = True
+                except Exception as e:
+                    self._log(f"[!] Помилка завантаження тестового файлу: {e}", "red")
+            
             os.makedirs("results", exist_ok=True)
             try:
                 plot_class_distribution(y, "Розподіл класів (вихідний)", "results/class_dist_original.png")
@@ -549,10 +616,27 @@ class PlantHealthApp(tk.Tk):
                 plot_correlation_heatmap(X, "results/correlation.png")
             except Exception as e:
                 self._log(f"[!] Помилка при збереженні correlation heatmap: {e}", "red")
+                
             self._log("\n[2/7] Розбиття та нормалізація...","yellow")
-            X_train,X_val,X_test,y_train,y_val,y_test=split_data(X,y,test_size=0.2,val_size=0.0,random_state=42)
+            
+            from sklearn.model_selection import train_test_split
+            if has_test_file:
+                # Split main dataset into train/validation
+                X_train, X_val, y_train, y_val = train_test_split(
+                    X, y, test_size=config["data"]["val_size"], random_state=42, stratify=y
+                )
+                X_test = X_test_raw
+            else:
+                # Fallback to splitting main dataset into Train/Val/Test
+                self._log("  [!] Тестовий файл не знайдено. Використовуємо 3-сторонній спліт.", "yellow")
+                test_size_fallback = 0.15
+                X_train, X_val, X_test, y_train, y_val, y_test = split_data(
+                    X, y, test_size=test_size_fallback, val_size=config["data"]["val_size"] * (1 - test_size_fallback), random_state=42
+                )
+                
             X_train_sc,scaler=fit_transform(X_train); X_val_sc=transform(X_val,scaler); X_test_sc=transform(X_test,scaler)
             save_scaler(scaler,"saved_models/scaler.pkl")
+            
             if config["preprocessing"]["apply_smote"]:
                 X_train_sc,y_train=apply_smote(X_train_sc,y_train)
                 self._log(f"  Після SMOTE: {len(y_train)} зразків")
@@ -560,10 +644,13 @@ class PlantHealthApp(tk.Tk):
                     plot_class_distribution(y_train, "Після SMOTE", "results/class_dist_smote.png")
                 except Exception as e:
                     self._log(f"[!] Помилка при збереженні class distribution після SMOTE: {e}", "red")
+                    
             self._log(f"  Train:{len(y_train)}  Val:{len(y_val) if y_val is not None else 0}  Test:{len(y_test)}")
+            
             self._log("\n[3/7] Навчання MLP...","yellow")
             mlp=build_mlp(input_dim=X_train_sc.shape[1],hidden_layers=[128,64,32],dropout=0.3,
                           learning_rate=config["training"]["learning_rate"])
+                          
             import tensorflow as tf
             class UICallback(tf.keras.callbacks.Callback):
                 def __init__(s,app): super().__init__(); s.app=app
@@ -571,7 +658,9 @@ class PlantHealthApp(tk.Tk):
                     logs=logs or {}
                     s.app._log(f"  Epoch {epoch+1:>3} | loss={logs.get('loss',0):.4f} | acc={logs.get('accuracy',0):.4f} | val_loss={logs.get('val_loss',0):.4f} | val_acc={logs.get('val_accuracy',0):.4f}")
                     s.app.lbl_epoch.configure(text=f"Epoch {epoch+1} | val_acc={logs.get('val_accuracy',0):.4f}")
-            history=train_model(mlp,X_train_sc,y_train,X_val_sc,y_val,config,"saved_models/mlp_best.keras")
+                    
+            history=train_model(mlp,X_train_sc,y_train,X_val_sc,y_val,config,"saved_models/mlp_best.keras",
+                                custom_callbacks=[UICallback(self)])
             plot_training_history(history,"results/training_history_mlp.png")
             self._log("\n[4/7] Оцінювання...","yellow")
             y_proba=mlp.predict(X_test_sc,verbose=0); y_pred=np.argmax(y_proba,axis=1)
