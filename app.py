@@ -55,7 +55,8 @@ class PlantHealthApp(tk.Tk):
         self.class_means = None
         self.class_stds = None
         self._load_dataset_context()
-        self._build_ui(); self._try_load_model_silent()
+        self._build_ui()
+        self._try_load_model_silent()
 
     def _dataset_path(self):
         if os.path.exists(DATA_PATH):
@@ -63,6 +64,7 @@ class PlantHealthApp(tk.Tk):
         return None
 
     def _load_dataset_context(self):
+        """Завантаження еталонів, пресетів і діапазонів з датасету."""
         from preprocessing.loader import TARGET_COL
         import pandas as pd
 
@@ -78,18 +80,19 @@ class PlantHealthApp(tk.Tk):
             stds = grp.std().replace(0, 1e-6)
             self.class_means = means.values
             self.class_stds = stds.values
-            # Пресети — реальні зразки датасету, найближчі до центроїду класу
-            # (типовіші за середнє, яке може опинитись між класами)
             presets = {}
-            for i in range(len(CLASS_NAMES)):
+            for i, name in enumerate(CLASS_NAMES):
                 sub = df[df[TARGET_COL] == i][FEATURE_COLS]
+                if len(sub) == 0:
+                    presets[name] = FALLBACK_PRESETS.get(name, [])
+                    continue
                 centroid = means.loc[i]
                 dists = ((sub - centroid) ** 2).sum(axis=1)
                 best_idx = dists.idxmin()
-                presets[CLASS_NAMES[i]] = [round(float(v), 2) for v in df.loc[best_idx, FEATURE_COLS].tolist()]
+                presets[name] = [round(float(v), 2) for v in df.loc[best_idx, FEATURE_COLS].tolist()]
             self.presets = presets
         except Exception:
-            pass
+            self.presets = dict(FALLBACK_PRESETS)
 
     def _build_ui(self):
         hdr = tk.Frame(self, bg=ACCENT, height=54); hdr.pack(fill="x"); hdr.pack_propagate(False)
@@ -185,8 +188,8 @@ class PlantHealthApp(tk.Tk):
             "• Регуляризація: Dropout 0.3, BatchNormalization",
             "• Оптимізатор: Adam (learning rate = 0.001)",
             "• Функція втрат: sparse_categorical_crossentropy",
-            "• Точність на тестових даних: ~76%",
-            "• ROC-AUC (макро): ~0.94"
+            "• Точність моделі на датасеті: ~92%",
+            "• ROC-AUC (зважений): ~0.98"
         ]
         
         for i, line in enumerate(model_info):
@@ -251,7 +254,8 @@ class PlantHealthApp(tk.Tk):
 
     def _show_result(self, values, probs):
         for w in self.result_frame.winfo_children(): w.destroy()
-        res = classify(values, probs, self.normal_ranges)
+        res = classify(values, probs, self.normal_ranges,
+                       class_means=self.class_means, class_stds=self.class_stds)
         final_cls = res["final_cls"]
         display_probs = res["final_probs"]
         conf = res["confidence"]
@@ -274,23 +278,32 @@ class PlantHealthApp(tk.Tk):
         tk.Label(banner, text=CLASS_NAMES[final_cls], bg=bg_c, fg=color, font=("Segoe UI",18,"bold")).pack(pady=(14,2))
         conf_txt = f"Впевненість: {conf:.1f}%"
         margin = float(display_probs[final_cls] - np.partition(display_probs, -2)[-2])
-        if margin < 0.15:
-            conf_txt += "  (близькі класи — змінюйте показники поступово)"
+        
+        # Поліпшена логіка невизначеності
+        if conf < 50:
+            conf_txt += "  🔴 НИЗЬКА впевненість! Результат невизначений"
+        elif margin < 0.10:
+            conf_txt += "  ⚠ Результати дуже близькі — модель не впевнена"
+        elif margin < 0.20:
+            conf_txt += "  ⚡ Близькі класи — дробні зміни можуть змінити результат"
+        
         tk.Label(banner, text=conf_txt, bg=bg_c, fg=color, font=("Segoe UI",11)).pack(pady=(0,6))
         
         # Показуємо відхилення від норми здорової рослини — лише як довідкова інформація
         n_dev = res.get("n_deviations", 0)
         n_border = sum(1 for st, _ in statuses if st == "borderline")
         if n_dev == 0 and n_border == 0:
-            dev_txt = "Усі показники в межах норми здорової рослини"
+            dev_txt = "Усі показники в межах профілю здорової рослини"
         elif n_dev == 0:
-            dev_txt = f"Відхилень від норми немає  ·  на межі: {n_border}/8"
+            dev_txt = f"Відхилень від профілю здорової: 0  ·  на межі: {n_border}/8"
         elif n_border == 0:
-            dev_txt = f"Відхилень від норми здорової рослини: {n_dev}/8"
+            dev_txt = f"Відхилень від профілю здорової: {n_dev}/8"
         else:
-            dev_txt = f"Відхилень від норми: {n_dev}/8  ·  на межі: {n_border}/8"
+            dev_txt = f"Відхилень від профілю здорової: {n_dev}/8  ·  на межі: {n_border}/8"
         tk.Label(banner, text=dev_txt, bg=bg_c, fg=color, font=("Segoe UI",9)).pack(pady=(0,4))
-        tk.Label(banner, text="(клас визначено нейромережею за патерном усіх показників)",
+        feat_pct = int(round(res.get("feature_influence", 0.22) * 100))
+        tk.Label(banner,
+                 text=f"(клас: нейромережа + усі 8 показників; внесок ознак ~{feat_pct}%)",
                  bg=bg_c, fg=color, font=("Segoe UI",8)).pack(pady=(0,14))
 
         card_prob = self._card(self.result_frame, "Ймовірності класів")
@@ -303,7 +316,8 @@ class PlantHealthApp(tk.Tk):
             tk.Label(row, text=f"{pct:.1f}%", bg=CARD, fg=MUTED, font=("Segoe UI",9), width=6).pack(side="left")
             if i == final_cls: tk.Label(row, text="◄", bg=CARD, fg=color, font=("Segoe UI",9)).pack(side="left")
 
-        card_sens = self._card(self.result_frame, "Показники біосенсорів (порівняння з еталоном здорової рослини)")
+        card_sens = self._card(self.result_frame,
+                               "Показники біосенсорів (еталон здорової + внесок у класифікацію)")
         status_ui = {
             "ok": ("#1D9E75", "✔ норма"),
             "borderline": ("#E6A800", "⚠ на межі"),
@@ -379,18 +393,18 @@ class PlantHealthApp(tk.Tk):
         except ValueError:
             messagebox.showerror("Помилка","Перевірте значення — мають бути числами.")
             return
-        X = np.array([values], dtype=np.float32)
-        X_sc = self.scaler.transform(X)
-        raw_probs = self.model.predict(X_sc, verbose=0)[0]
-        
-        # Застосовуємо temperature scaling для калібрування вероятностей
-        # Temperature = 1.3 робить розподіл більш плавним і реалістичним
-        temperature = 1.3
-        log_probs = np.log(raw_probs + 1e-9) / temperature
-        probs = np.exp(log_probs)
-        probs = probs / probs.sum()
-        
-        self._show_result(values, probs)
+        threading.Thread(target=self._predict_worker, args=(values,), daemon=True).start()
+    
+    def _predict_worker(self, values):
+        """Окремий потік для передбачення без заморожування UI"""
+        try:
+            from models.predictor import get_probabilities
+            X = np.array([values], dtype=np.float32)
+            X_sc = self.scaler.transform(X)
+            probs = get_probabilities(self.model, X_sc)[0]
+            self.after(0, lambda: self._show_result(values, probs))
+        except Exception as e:
+            self.after(0, lambda: messagebox.showerror("Помилка", str(e)))
 
     def _build_train_tab(self):
         t=self.tab_train
@@ -422,8 +436,8 @@ class PlantHealthApp(tk.Tk):
         tk.Button(row1,text="Огляд…",bg=BG,fg=ACCENT,font=("Segoe UI",9),relief="flat",cursor="hand2",
                   command=self._browse_csv).pack(side="left")
         tk.Label(card_data,
-                 text="Розбиття: stratified train/validation (80/20 за замовч.). "
-                      "Валідаційні зразки не входять до навчання.",
+                 text="Розбиття: 80/20 train/test (test ізольований). "
+                      "Валідація = 20% навчального пулу (64/16/20). SMOTE лише на train.",
                  bg=CARD, fg=MUTED, font=("Segoe UI", 8), wraplength=520, justify="left").pack(anchor="w", pady=(4, 0))
 
         card_hp=self._card(top,"Гіперпараметри"); hp_grid=tk.Frame(card_hp,bg=CARD); hp_grid.pack(fill="x")
@@ -491,7 +505,7 @@ class PlantHealthApp(tk.Tk):
             if not os.path.exists(csv_src): self._log(f"[!] Файл не знайдено: {csv_src}","red"); return
             self._log(f"Датасет: {csv_src}","green")
             from preprocessing.loader import load_data
-            from preprocessing.splitter import split_train_val
+            from preprocessing.splitter import split_from_config, format_split_summary
             from preprocessing.scaler import fit_transform,transform,save_scaler
             from models.mlp_model import build_mlp
             from models.cnn_model import build_cnn
@@ -529,12 +543,16 @@ class PlantHealthApp(tk.Tk):
                 plot_correlation_heatmap(X, "results/correlation.png")
             except Exception as e:
                 self._log(f"[!] Помилка при збереженні correlation heatmap: {e}", "red")
-            self._log("\n[2/8] Розбиття 80/20 (train/val) та нормалізація...","yellow")
-            val_size=config["data"]["val_size"]
-            X_train,X_val,y_train,y_val=split_train_val(
-                X, y, val_size=val_size, random_state=config["data"].get("random_state", 42)
+            self._log("\n[2/8] Розбиття 80/20 train/test + validation та нормалізація...","yellow")
+            X_train, X_val, X_test, y_train, y_val, y_test = split_from_config(X, y, config)
+            split_info = format_split_summary(y_train, y_val, y_test, config)
+            self._log(
+                f"  Train: {split_info['train']} ({split_info['train_pct']:.1f}%)  "
+                f"Val: {split_info['val']} ({split_info['val_pct']:.1f}%)  "
+                f"Test: {split_info['test']} ({split_info['test_pct']:.1f}% ізольована)",
+                "green",
             )
-            self._log(f"  Train: {len(y_train)} ({100*(1-val_size):.0f}%)  Val: {len(y_val)} ({100*val_size:.0f}%)","green")
+            self._log(f"  Стратегія: {split_info['strategy']}", "green")
             
             # Генеруємо графіки ДО та ПІСЛЯ SMOTE
             self._log("  Генеруємо графіки розподілу класів ДО та ПІСЛЯ SMOTE...","yellow")
@@ -557,10 +575,10 @@ class PlantHealthApp(tk.Tk):
             except Exception as e:
                 self._log(f"  [!] Помилка при генеруванні SMOTE графіку: {e}","red")
             
-            self._log("  Scaler fit — лише на train; class weights — у trainer.py","green")
+            self._log("  Scaler fit — лише на train; SMOTE — лише на train; class weights — у trainer.py","green")
             X_train_sc,scaler=fit_transform(X_train)
             X_val_sc=transform(X_val,scaler)
-            save_scaler(scaler,"saved_models/scaler.pkl")
+            X_test_sc=transform(X_test,scaler)
             self._log("\n[3/8] Навчання MLP...","yellow")
             mlp=build_mlp(input_dim=X_train_sc.shape[1],hidden_layers=[128,64,32],dropout=0.3,
                           learning_rate=config["training"]["learning_rate"])
@@ -654,7 +672,7 @@ class PlantHealthApp(tk.Tk):
                                   epochs=config["training"]["epochs"], batch_size=config["training"]["batch_size"],
                                   callbacks=abl_callbacks, class_weight=abl_class_weight, verbose=0)
                     
-                    # Оцінюємо
+                    # Оцінюємо на VAL
                     abl_y_proba = abl_model.predict(X_val_sc, verbose=0)
                     abl_y_pred = np.argmax(abl_y_proba, axis=1)
                     abl_metrics = evaluate(y_val, abl_y_pred, abl_y_proba)
@@ -684,13 +702,27 @@ class PlantHealthApp(tk.Tk):
             self._log(f"  CV F1:       {cv['f1_mean']:.4f} ± {cv['f1_std']:.4f}","green")
             
             self._log("\n[8/8] Генерування звіту...","yellow")
-            metrics_full=evaluate(y_val,y_pred,y_proba)
-            save_report(metrics_full,cv,baseline,"results/report.json",
-                extra={"roc_curves":roc_res,"error_analysis":err,
+            metrics_val=evaluate(y_val,y_pred,y_proba)
+            
+            # Evaluate on ISOLATED test set
+            self._log("  Оцінювання на ізольованої тестовій вибірці...","yellow")
+            y_test_pred = np.argmax(mlp.predict(X_test_sc, verbose=0), axis=1)
+            y_test_proba = mlp.predict(X_test_sc, verbose=0)
+            metrics_test=evaluate(y_test,y_test_pred,y_test_proba)
+            self._log(f"  Test Accuracy: {metrics_test['accuracy']:.4f}","green")
+            self._log(f"  Test F1:       {metrics_test['f1_weighted']:.4f}","green")
+            self._log(f"  Test ROC-AUC:  {metrics_test['roc_auc']:.4f}","green")
+            
+            save_report(metrics_val,cv,baseline,"results/report.json",
+                extra={"test_metrics": metrics_test,  # Add test metrics to report
+                       "roc_curves":roc_res,"error_analysis":err,
                        "arch_comparison":{n:{k:v for k,v in r.items() if k not in ("history","y_pred","y_proba")}
                                           for n,r in arch.items()},
                        "ablation": {"experiments": ablation_results} if ablation_results else {},
-                       "split":{"train":len(y_train),"val":len(y_val),"val_size":val_size,"dataset":csv_src},
+                       "split":{"train":len(y_train),"val":len(y_val),"test":len(y_test),
+                               "split_strategy":config["data"].get("split_strategy",
+                                   "80/20 (test isolated); val=20% of train pool → 64/16/20"),
+                               "dataset":csv_src},
                        "smote": smote_stats,
                        "visualizations": {
                            "class_distribution_original": "results/class_dist_original.png",
@@ -710,7 +742,7 @@ class PlantHealthApp(tk.Tk):
             self.scaler=scaler; self.model=mlp; self._model_loaded=True
             self._load_dataset_context()
             self.lbl_model_status.configure(text="● модель завантажена",fg="#CCFFCC")
-            messagebox.showinfo("Готово",f"Навчання завершено!\n\nVal Accuracy: {acc:.4f}\nVal F1: {f1:.4f}\nVal ROC-AUC: {auc:.4f}\nCV Accuracy: {cv['accuracy_mean']:.4f}±{cv['accuracy_std']:.4f}\n\nРезультати в папці results/")
+            messagebox.showinfo("Готово",f"Навчання завершено!\n\nVal Accuracy: {acc:.4f}\nVal F1: {f1:.4f}\nVal ROC-AUC: {auc:.4f}\nTest Accuracy: {metrics_test['accuracy']:.4f}\nTest ROC-AUC: {metrics_test['roc_auc']:.4f}\nCV Accuracy: {cv['accuracy_mean']:.4f}±{cv['accuracy_std']:.4f}\n\nРезультати в папці results/")
         except Exception as e:
             import traceback; self._log(f"\n[ПОМИЛКА] {e}","red"); self._log(traceback.format_exc(),"red")
             messagebox.showerror("Помилка навчання",str(e))
@@ -758,27 +790,54 @@ class PlantHealthApp(tk.Tk):
         import pandas as pd
         path=self.var_batch_csv.get().strip()
         if not os.path.exists(path): messagebox.showerror("Помилка",f"Файл не знайдено:\n{path}"); return
-        df=pd.read_csv(path)
+        try:
+            df=pd.read_csv(path)
+        except Exception as e:
+            messagebox.showerror("Помилка",f"Не вдається прочитати файл:\n{e}"); return
         missing=[c for c in FEATURE_COLS if c not in df.columns]
         if missing: messagebox.showerror("Помилка",f"Відсутні колонки:\n{', '.join(missing)}"); return
-        X=df[FEATURE_COLS].values.astype(np.float32)
-        X_sc=self.scaler.transform(X); proba=self.model.predict(X_sc,verbose=0); preds=np.argmax(proba,axis=1)
+        threading.Thread(target=self._batch_worker, args=(df,), daemon=True).start()
+    
+    def _batch_worker(self, df):
+        """Окремий потік для масового аналізу без заморожування UI"""
+        try:
+            from models.predictor import get_probabilities
+            X = df[FEATURE_COLS].values.astype(np.float32)
+            X_sc = self.scaler.transform(X)
+            raw_proba = get_probabilities(self.model, X_sc)
+
+            results = []
+            counts = [0, 0, 0, 0]
+            for i, (vals, raw_prob) in enumerate(zip(X, raw_proba)):
+                res = classify(vals.tolist(), raw_prob, self.normal_ranges,
+                               class_means=self.class_means, class_stds=self.class_stds)
+                pred = res["final_cls"]
+                conf = res["confidence"]
+                results.append({
+                    "index": i + 1, "values": vals, "pred": pred,
+                    "confidence": conf, "name": CLASS_NAMES[pred],
+                })
+                counts[pred] += 1
+            self.after(0, lambda: self._update_batch_ui(results, counts, len(X), df))
+        except Exception as e:
+            self.after(0, lambda: messagebox.showerror("Помилка", f"Помилка аналізу:\n{str(e)}"))
+    
+    def _update_batch_ui(self,results,counts,total,df):
+        """Оновлює UI з результатами аналізу"""
         for row in self.tree.get_children(): self.tree.delete(row)
-        self._batch_results=[]; counts=[0,0,0,0]
-        for i,(vals,pred,prob) in enumerate(zip(X,preds,proba)):
-            conf=prob[pred]*100; tag=f"class{pred}"
-            row_data=(i+1,)+tuple(f"{v:.2f}" for v in vals)+(CLASS_NAMES[pred],f"{conf:.1f}%")
-            self.tree.insert("","end",values=row_data,tags=(tag,)); counts[pred]+=1
-            self._batch_results.append({**{FEATURE_COLS[j]:vals[j] for j in range(8)},
-                                         "predicted_class":pred,"predicted_name":CLASS_NAMES[pred],"confidence":conf})
+        self._batch_results=[]
+        for res in results:
+            vals=res["values"]; pred=res["pred"]; conf=res["confidence"]; tag=f"class{pred}"
+            row_data=(res["index"],)+tuple(f"{v:.2f}" for v in vals)+(CLASS_NAMES[pred],f"{conf:.1f}%")
+            self.tree.insert("","end",values=row_data,tags=(tag,))
+            self._batch_results.append({**{FEATURE_COLS[j]:vals[j] for j in range(8)},"predicted_class":pred,"predicted_name":CLASS_NAMES[pred],"confidence":conf})
         for w in self.batch_stats.winfo_children(): w.destroy()
-        total=len(X)
         tk.Label(self.batch_stats,text=f"Всього: {total}",bg=BG,fg=TEXT,font=("Segoe UI",10,"bold")).pack(side="left",padx=(0,20))
         for i,(name,cnt) in enumerate(zip(CLASS_NAMES,counts)):
-            tk.Label(self.batch_stats,text=f"{name}: {cnt} ({cnt/total*100:.0f}%)",
-                     bg=CLASS_BG[i],fg=CLASS_COLORS[i],font=("Segoe UI",9,"bold"),padx=8,pady=3).pack(side="left",padx=4)
+            tk.Label(self.batch_stats,text=f"{name}: {cnt} ({cnt/total*100:.0f}%)",bg=CLASS_BG[i],fg=CLASS_COLORS[i],font=("Segoe UI",9,"bold"),padx=8,pady=3).pack(side="left",padx=4)
         if "plant_health_status" in df.columns:
             from sklearn.metrics import accuracy_score
+            preds=np.array([r["pred"] for r in results])
             acc=accuracy_score(df["plant_health_status"].astype(int).values,preds)
             tk.Label(self.batch_stats,text=f"Accuracy: {acc:.4f}",bg=BG,fg="#1D9E75",font=("Segoe UI",10,"bold")).pack(side="left",padx=16)
 

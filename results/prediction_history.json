@@ -1,468 +1,6 @@
 [
   {
-    "timestamp": "2026-06-06T04:26:59.533098",
-    "input_values": {
-      "fluorescence_intensity": 61.16,
-      "colorimetric_index": 0.6,
-      "spr_signal_strength": 100.3,
-      "leaf_temperature": 24.34,
-      "chlorophyll_content": 51.99,
-      "moisture_level": 30.26,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 14.89
-    },
-    "predicted_class": "Критичний стрес",
-    "confidence": 99.9863915055547,
-    "class_probabilities": {
-      "Критичний стрес": 0.9998639150555471,
-      "Помірний стрес": 2.4404719986017365e-05,
-      "Легкий стрес": 1.2488413372010773e-05,
-      "Здорова рослина": 9.919181109492344e-05
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:27:03.048494",
-    "input_values": {
-      "fluorescence_intensity": 50.0,
-      "colorimetric_index": 0.61,
-      "spr_signal_strength": 123.96,
-      "leaf_temperature": 24.6,
-      "chlorophyll_content": 34.56,
-      "moisture_level": 30.24,
-      "light_absorption_ratio": 0.7,
-      "volatile_organic_compounds": 15.4
-    },
-    "predicted_class": "Помірний стрес",
-    "confidence": 99.88910996637024,
-    "class_probabilities": {
-      "Критичний стрес": 0.00010422901419332609,
-      "Помірний стрес": 0.9988910996637025,
-      "Легкий стрес": 0.00010766998204794393,
-      "Здорова рослина": 0.0008970013400562539
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:27:05.441691",
-    "input_values": {
-      "fluorescence_intensity": 50.91,
-      "colorimetric_index": 0.44,
-      "spr_signal_strength": 91.02,
-      "leaf_temperature": 24.12,
-      "chlorophyll_content": 42.27,
-      "moisture_level": 24.4,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 15.36
-    },
-    "predicted_class": "Легкий стрес",
-    "confidence": 99.9900576310493,
-    "class_probabilities": {
-      "Критичний стрес": 2.2112318058311897e-05,
-      "Помірний стрес": 2.3056080811009083e-05,
-      "Легкий стрес": 0.9999005763104929,
-      "Здорова рослина": 5.425529063777753e-05
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:27:09.401408",
-    "input_values": {
-      "fluorescence_intensity": 48.95,
-      "colorimetric_index": 0.61,
-      "spr_signal_strength": 92.43,
-      "leaf_temperature": 24.83,
-      "chlorophyll_content": 39.6,
-      "moisture_level": 30.01,
-      "light_absorption_ratio": 0.7,
-      "volatile_organic_compounds": 14.78
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 99.75423996640701,
-    "class_probabilities": {
-      "Критичний стрес": 0.00034862934904762017,
-      "Помірний стрес": 0.001339773905000093,
-      "Легкий стрес": 0.0007691970818822084,
-      "Здорова рослина": 0.9975423996640701
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:27:20.021770",
-    "input_values": {
-      "fluorescence_intensity": 50.91,
-      "colorimetric_index": 0.44,
-      "spr_signal_strength": 91.02,
-      "leaf_temperature": 24.12,
-      "chlorophyll_content": 42.27,
-      "moisture_level": 24.4,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 15.36
-    },
-    "predicted_class": "Легкий стрес",
-    "confidence": 99.9900576310493,
-    "class_probabilities": {
-      "Критичний стрес": 2.2112318058311897e-05,
-      "Помірний стрес": 2.3056080811009083e-05,
-      "Легкий стрес": 0.9999005763104929,
-      "Здорова рослина": 5.425529063777753e-05
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:27:21.915627",
-    "input_values": {
-      "fluorescence_intensity": 50.0,
-      "colorimetric_index": 0.61,
-      "spr_signal_strength": 123.96,
-      "leaf_temperature": 24.6,
-      "chlorophyll_content": 34.56,
-      "moisture_level": 30.24,
-      "light_absorption_ratio": 0.7,
-      "volatile_organic_compounds": 15.4
-    },
-    "predicted_class": "Помірний стрес",
-    "confidence": 99.88910996637024,
-    "class_probabilities": {
-      "Критичний стрес": 0.00010422901419332609,
-      "Помірний стрес": 0.9988910996637025,
-      "Легкий стрес": 0.00010766998204794393,
-      "Здорова рослина": 0.0008970013400562539
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:27:24.396448",
-    "input_values": {
-      "fluorescence_intensity": 61.16,
-      "colorimetric_index": 0.6,
-      "spr_signal_strength": 100.3,
-      "leaf_temperature": 24.34,
-      "chlorophyll_content": 51.99,
-      "moisture_level": 30.26,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 14.89
-    },
-    "predicted_class": "Критичний стрес",
-    "confidence": 99.9863915055547,
-    "class_probabilities": {
-      "Критичний стрес": 0.9998639150555471,
-      "Помірний стрес": 2.4404719986017365e-05,
-      "Легкий стрес": 1.2488413372010773e-05,
-      "Здорова рослина": 9.919181109492344e-05
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:32:39.164794",
-    "input_values": {
-      "fluorescence_intensity": 61.16,
-      "colorimetric_index": 0.6,
-      "spr_signal_strength": 100.3,
-      "leaf_temperature": 24.34,
-      "chlorophyll_content": 51.99,
-      "moisture_level": 30.26,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 14.89
-    },
-    "predicted_class": "Критичний стрес",
-    "confidence": 99.9863915055547,
-    "class_probabilities": {
-      "Критичний стрес": 0.9998639150555471,
-      "Помірний стрес": 2.4404719986017365e-05,
-      "Легкий стрес": 1.2488413372010773e-05,
-      "Здорова рослина": 9.919181109492344e-05
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:32:44.106518",
-    "input_values": {
-      "fluorescence_intensity": 50.0,
-      "colorimetric_index": 0.61,
-      "spr_signal_strength": 123.96,
-      "leaf_temperature": 24.6,
-      "chlorophyll_content": 34.56,
-      "moisture_level": 30.24,
-      "light_absorption_ratio": 0.7,
-      "volatile_organic_compounds": 15.4
-    },
-    "predicted_class": "Помірний стрес",
-    "confidence": 99.88910996637024,
-    "class_probabilities": {
-      "Критичний стрес": 0.00010422901419332609,
-      "Помірний стрес": 0.9988910996637025,
-      "Легкий стрес": 0.00010766998204794393,
-      "Здорова рослина": 0.0008970013400562539
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:32:46.551195",
-    "input_values": {
-      "fluorescence_intensity": 50.91,
-      "colorimetric_index": 0.44,
-      "spr_signal_strength": 91.02,
-      "leaf_temperature": 24.12,
-      "chlorophyll_content": 42.27,
-      "moisture_level": 24.4,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 15.36
-    },
-    "predicted_class": "Легкий стрес",
-    "confidence": 99.9900576310493,
-    "class_probabilities": {
-      "Критичний стрес": 2.2112318058311897e-05,
-      "Помірний стрес": 2.3056080811009083e-05,
-      "Легкий стрес": 0.9999005763104929,
-      "Здорова рослина": 5.425529063777753e-05
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:32:48.775571",
-    "input_values": {
-      "fluorescence_intensity": 48.95,
-      "colorimetric_index": 0.61,
-      "spr_signal_strength": 92.43,
-      "leaf_temperature": 24.83,
-      "chlorophyll_content": 39.6,
-      "moisture_level": 30.01,
-      "light_absorption_ratio": 0.7,
-      "volatile_organic_compounds": 14.78
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 99.75423996640701,
-    "class_probabilities": {
-      "Критичний стрес": 0.00034862934904762017,
-      "Помірний стрес": 0.001339773905000093,
-      "Легкий стрес": 0.0007691970818822084,
-      "Здорова рослина": 0.9975423996640701
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:33:03.134082",
-    "input_values": {
-      "fluorescence_intensity": 70.95,
-      "colorimetric_index": 0.61,
-      "spr_signal_strength": 92.43,
-      "leaf_temperature": 24.83,
-      "chlorophyll_content": 39.6,
-      "moisture_level": 30.01,
-      "light_absorption_ratio": 0.7,
-      "volatile_organic_compounds": 14.78
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 99.41396742190108,
-    "class_probabilities": {
-      "Критичний стрес": 0.001900802488382913,
-      "Помірний стрес": 0.0016495583161291385,
-      "Легкий стрес": 0.002309964976477102,
-      "Здорова рослина": 0.9941396742190108
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:33:10.082234",
-    "input_values": {
-      "fluorescence_intensity": 70.95,
-      "colorimetric_index": 0.82,
-      "spr_signal_strength": 92.43,
-      "leaf_temperature": 24.83,
-      "chlorophyll_content": 39.6,
-      "moisture_level": 30.01,
-      "light_absorption_ratio": 0.7,
-      "volatile_organic_compounds": 14.78
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 99.16707977592293,
-    "class_probabilities": {
-      "Критичний стрес": 0.004707617451734255,
-      "Помірний стрес": 0.0023656458352034533,
-      "Легкий стрес": 0.0012559389538329567,
-      "Здорова рослина": 0.9916707977592293
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:33:24.376311",
-    "input_values": {
-      "fluorescence_intensity": 70.95,
-      "colorimetric_index": 0.82,
-      "spr_signal_strength": 77.43,
-      "leaf_temperature": 24.83,
-      "chlorophyll_content": 39.6,
-      "moisture_level": 30.01,
-      "light_absorption_ratio": 0.7,
-      "volatile_organic_compounds": 14.78
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 99.46993896556103,
-    "class_probabilities": {
-      "Критичний стрес": 0.0041056360454554625,
-      "Помірний стрес": 0.0004287703619025809,
-      "Легкий стрес": 0.0007662039370317471,
-      "Здорова рослина": 0.9946993896556102
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:33:38.772175",
-    "input_values": {
-      "fluorescence_intensity": 61.16,
-      "colorimetric_index": 0.6,
-      "spr_signal_strength": 100.3,
-      "leaf_temperature": 24.34,
-      "chlorophyll_content": 51.99,
-      "moisture_level": 30.26,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 14.89
-    },
-    "predicted_class": "Критичний стрес",
-    "confidence": 99.9863915055547,
-    "class_probabilities": {
-      "Критичний стрес": 0.9998639150555471,
-      "Помірний стрес": 2.4404719986017365e-05,
-      "Легкий стрес": 1.2488413372010773e-05,
-      "Здорова рослина": 9.919181109492344e-05
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:33:43.631454",
-    "input_values": {
-      "fluorescence_intensity": 48.95,
-      "colorimetric_index": 0.61,
-      "spr_signal_strength": 92.43,
-      "leaf_temperature": 24.83,
-      "chlorophyll_content": 39.6,
-      "moisture_level": 30.01,
-      "light_absorption_ratio": 0.7,
-      "volatile_organic_compounds": 14.78
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 99.75423996640701,
-    "class_probabilities": {
-      "Критичний стрес": 0.00034862934904762017,
-      "Помірний стрес": 0.001339773905000093,
-      "Легкий стрес": 0.0007691970818822084,
-      "Здорова рослина": 0.9975423996640701
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:33:55.901370",
-    "input_values": {
-      "fluorescence_intensity": 48.95,
-      "colorimetric_index": 0.61,
-      "spr_signal_strength": 92.43,
-      "leaf_temperature": 24.83,
-      "chlorophyll_content": 51.6,
-      "moisture_level": 30.01,
-      "light_absorption_ratio": 0.7,
-      "volatile_organic_compounds": 14.78
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 99.06534010926865,
-    "class_probabilities": {
-      "Критичний стрес": 0.0033660195649642304,
-      "Помірний стрес": 0.0038695738397584814,
-      "Легкий стрес": 0.0021110055025908053,
-      "Здорова рослина": 0.9906534010926865
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:43:47.381215",
-    "input_values": {
-      "fluorescence_intensity": 61.16,
-      "colorimetric_index": 0.6,
-      "spr_signal_strength": 100.3,
-      "leaf_temperature": 24.34,
-      "chlorophyll_content": 51.99,
-      "moisture_level": 30.26,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 14.89
-    },
-    "predicted_class": "Критичний стрес",
-    "confidence": 99.99859974778289,
-    "class_probabilities": {
-      "Критичний стрес": 0.9999859974778289,
-      "Помірний стрес": 1.237616635278701e-06,
-      "Легкий стрес": 2.0668285382125805e-06,
-      "Здорова рослина": 1.0698076997640306e-05
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:43:50.701297",
-    "input_values": {
-      "fluorescence_intensity": 50.0,
-      "colorimetric_index": 0.61,
-      "spr_signal_strength": 123.96,
-      "leaf_temperature": 24.6,
-      "chlorophyll_content": 34.56,
-      "moisture_level": 30.24,
-      "light_absorption_ratio": 0.7,
-      "volatile_organic_compounds": 15.4
-    },
-    "predicted_class": "Помірний стрес",
-    "confidence": 99.98798538688571,
-    "class_probabilities": {
-      "Критичний стрес": 2.4357459961590014e-06,
-      "Помірний стрес": 0.9998798538688571,
-      "Легкий стрес": 1.0084905795039601e-05,
-      "Здорова рослина": 0.0001076254793516888
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:43:52.480863",
-    "input_values": {
-      "fluorescence_intensity": 50.91,
-      "colorimetric_index": 0.44,
-      "spr_signal_strength": 91.02,
-      "leaf_temperature": 24.12,
-      "chlorophyll_content": 42.27,
-      "moisture_level": 24.4,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 15.36
-    },
-    "predicted_class": "Легкий стрес",
-    "confidence": 99.99956261688536,
-    "class_probabilities": {
-      "Критичний стрес": 8.246092119641094e-07,
-      "Помірний стрес": 1.4499447286865923e-06,
-      "Легкий стрес": 0.9999956261688536,
-      "Здорова рослина": 2.0992772057273923e-06
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:43:55.236288",
-    "input_values": {
-      "fluorescence_intensity": 48.95,
-      "colorimetric_index": 0.61,
-      "spr_signal_strength": 92.43,
-      "leaf_temperature": 24.83,
-      "chlorophyll_content": 39.6,
-      "moisture_level": 30.01,
-      "light_absorption_ratio": 0.7,
-      "volatile_organic_compounds": 14.78
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 99.91441859655706,
-    "class_probabilities": {
-      "Критичний стрес": 6.090211108429858e-05,
-      "Помірний стрес": 0.000624003115043768,
-      "Легкий стрес": 0.0001709088083014414,
-      "Здорова рослина": 0.9991441859655705
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:44:09.340971",
-    "input_values": {
-      "fluorescence_intensity": 55.95,
-      "colorimetric_index": 0.61,
-      "spr_signal_strength": 92.43,
-      "leaf_temperature": 24.83,
-      "chlorophyll_content": 39.6,
-      "moisture_level": 30.01,
-      "light_absorption_ratio": 0.7,
-      "volatile_organic_compounds": 14.78
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 99.93267470649982,
-    "class_probabilities": {
-      "Критичний стрес": 0.0001359237559439548,
-      "Помірний стрес": 0.0004279249873126657,
-      "Легкий стрес": 0.00010940419174512145,
-      "Здорова рослина": 0.9993267470649982
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:58:19.724169",
+    "timestamp": "2026-06-06T11:50:58.699803",
     "input_values": {
       "fluorescence_intensity": 61.49,
       "colorimetric_index": 0.64,
@@ -474,16 +12,16 @@
       "volatile_organic_compounds": 13.23
     },
     "predicted_class": "Критичний стрес",
-    "confidence": 99.9987357634005,
+    "confidence": 99.88766417809866,
     "class_probabilities": {
-      "Критичний стрес": 0.999987357634005,
-      "Помірний стрес": 1.5269139245195489e-06,
-      "Легкий стрес": 1.3228599218647855e-06,
-      "Здорова рослина": 9.7925921485918e-06
+      "Критичний стрес": 0.9988766417809866,
+      "Помірний стрес": 0.00023159681449566244,
+      "Легкий стрес": 0.00016097779915109713,
+      "Здорова рослина": 0.0007307836053665805
     }
   },
   {
-    "timestamp": "2026-06-06T04:58:23.575824",
+    "timestamp": "2026-06-06T11:51:01.925071",
     "input_values": {
       "fluorescence_intensity": 52.24,
       "colorimetric_index": 0.64,
@@ -495,16 +33,16 @@
       "volatile_organic_compounds": 16.57
     },
     "predicted_class": "Помірний стрес",
-    "confidence": 99.88584097427554,
+    "confidence": 99.28508208471278,
     "class_probabilities": {
-      "Критичний стрес": 2.3800359902984686e-05,
-      "Помірний стрес": 0.9988584097427554,
-      "Легкий стрес": 3.770563555600546e-05,
-      "Здорова рослина": 0.0010800842617855447
+      "Критичний стрес": 0.000820227067851484,
+      "Помірний стрес": 0.9928508208471278,
+      "Легкий стрес": 0.0005343744311279917,
+      "Здорова рослина": 0.005794577653892667
     }
   },
   {
-    "timestamp": "2026-06-06T04:58:27.441158",
+    "timestamp": "2026-06-06T11:51:03.771587",
     "input_values": {
       "fluorescence_intensity": 52.03,
       "colorimetric_index": 0.5,
@@ -516,16 +54,16 @@
       "volatile_organic_compounds": 14.51
     },
     "predicted_class": "Легкий стрес",
-    "confidence": 99.96904855359023,
+    "confidence": 99.68290923185441,
     "class_probabilities": {
-      "Критичний стрес": 5.2814030571928215e-05,
-      "Помірний стрес": 3.2576285271984584e-05,
-      "Легкий стрес": 0.9996904855359022,
-      "Здорова рослина": 0.0002241241482538506
+      "Критичний стрес": 0.0007984279983149856,
+      "Помірний стрес": 0.000631745278219302,
+      "Легкий стрес": 0.9968290923185441,
+      "Здорова рослина": 0.0017407344049216924
     }
   },
   {
-    "timestamp": "2026-06-06T04:58:30.085738",
+    "timestamp": "2026-06-06T11:51:05.555644",
     "input_values": {
       "fluorescence_intensity": 53.03,
       "colorimetric_index": 0.63,
@@ -537,814 +75,37 @@
       "volatile_organic_compounds": 13.65
     },
     "predicted_class": "Здорова рослина",
-    "confidence": 99.84479481382891,
+    "confidence": 97.92188028816611,
     "class_probabilities": {
-      "Критичний стрес": 0.00045210640815247137,
-      "Помірний стрес": 0.0009783232753575724,
-      "Легкий стрес": 0.00012162217820081354,
-      "Здорова рослина": 0.9984479481382892
+      "Критичний стрес": 0.006408988641403362,
+      "Помірний стрес": 0.00955896007773936,
+      "Легкий стрес": 0.004813248399196157,
+      "Здорова рослина": 0.9792188028816611
     }
   },
   {
-    "timestamp": "2026-06-06T04:59:06.195922",
-    "input_values": {
-      "fluorescence_intensity": 52.03,
-      "colorimetric_index": 0.5,
-      "spr_signal_strength": 89.48,
-      "leaf_temperature": 24.47,
-      "chlorophyll_content": 43.6,
-      "moisture_level": 20.33,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 14.51
-    },
-    "predicted_class": "Легкий стрес",
-    "confidence": 99.96904855359023,
-    "class_probabilities": {
-      "Критичний стрес": 5.2814030571928215e-05,
-      "Помірний стрес": 3.2576285271984584e-05,
-      "Легкий стрес": 0.9996904855359022,
-      "Здорова рослина": 0.0002241241482538506
-    }
-  },
-  {
-    "timestamp": "2026-06-06T04:59:17.783899",
-    "input_values": {
-      "fluorescence_intensity": 52.24,
-      "colorimetric_index": 0.64,
-      "spr_signal_strength": 120.54,
-      "leaf_temperature": 27.62,
-      "chlorophyll_content": 36.49,
-      "moisture_level": 30.17,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 16.57
-    },
-    "predicted_class": "Помірний стрес",
-    "confidence": 99.88584097427554,
-    "class_probabilities": {
-      "Критичний стрес": 2.3800359902984686e-05,
-      "Помірний стрес": 0.9988584097427554,
-      "Легкий стрес": 3.770563555600546e-05,
-      "Здорова рослина": 0.0010800842617855447
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:00:31.590876",
-    "input_values": {
-      "fluorescence_intensity": 61.49,
-      "colorimetric_index": 0.64,
-      "spr_signal_strength": 104.49,
-      "leaf_temperature": 24.08,
-      "chlorophyll_content": 57.07,
-      "moisture_level": 32.04,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.23
-    },
-    "predicted_class": "Критичний стрес",
-    "confidence": 99.9987357634005,
-    "class_probabilities": {
-      "Критичний стрес": 0.999987357634005,
-      "Помірний стрес": 1.5269139245195489e-06,
-      "Легкий стрес": 1.3228599218647855e-06,
-      "Здорова рослина": 9.7925921485918e-06
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:00:34.705761",
-    "input_values": {
-      "fluorescence_intensity": 52.24,
-      "colorimetric_index": 0.64,
-      "spr_signal_strength": 120.54,
-      "leaf_temperature": 27.62,
-      "chlorophyll_content": 36.49,
-      "moisture_level": 30.17,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 16.57
-    },
-    "predicted_class": "Помірний стрес",
-    "confidence": 99.88584097427554,
-    "class_probabilities": {
-      "Критичний стрес": 2.3800359902984686e-05,
-      "Помірний стрес": 0.9988584097427554,
-      "Легкий стрес": 3.770563555600546e-05,
-      "Здорова рослина": 0.0010800842617855447
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:00:36.625911",
-    "input_values": {
-      "fluorescence_intensity": 52.03,
-      "colorimetric_index": 0.5,
-      "spr_signal_strength": 89.48,
-      "leaf_temperature": 24.47,
-      "chlorophyll_content": 43.6,
-      "moisture_level": 20.33,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 14.51
-    },
-    "predicted_class": "Легкий стрес",
-    "confidence": 99.96904855359023,
-    "class_probabilities": {
-      "Критичний стрес": 5.2814030571928215e-05,
-      "Помірний стрес": 3.2576285271984584e-05,
-      "Легкий стрес": 0.9996904855359022,
-      "Здорова рослина": 0.0002241241482538506
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:00:39.030568",
-    "input_values": {
-      "fluorescence_intensity": 53.03,
-      "colorimetric_index": 0.63,
-      "spr_signal_strength": 95.28,
-      "leaf_temperature": 22.63,
-      "chlorophyll_content": 40.44,
-      "moisture_level": 30.39,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.65
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 99.84479481382891,
-    "class_probabilities": {
-      "Критичний стрес": 0.00045210640815247137,
-      "Помірний стрес": 0.0009783232753575724,
-      "Легкий стрес": 0.00012162217820081354,
-      "Здорова рослина": 0.9984479481382892
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:05:18.220609",
-    "input_values": {
-      "fluorescence_intensity": 61.49,
-      "colorimetric_index": 0.64,
-      "spr_signal_strength": 104.49,
-      "leaf_temperature": 24.08,
-      "chlorophyll_content": 57.07,
-      "moisture_level": 32.04,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.23
-    },
-    "predicted_class": "Критичний стрес",
-    "confidence": 99.88171993535711,
-    "class_probabilities": {
-      "Критичний стрес": 0.9988171993535712,
-      "Помірний стрес": 0.00015975796753222194,
-      "Легкий стрес": 0.00013172926184688066,
-      "Здорова рослина": 0.0008913134170496922
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:05:20.865884",
-    "input_values": {
-      "fluorescence_intensity": 52.24,
-      "colorimetric_index": 0.64,
-      "spr_signal_strength": 120.54,
-      "leaf_temperature": 27.62,
-      "chlorophyll_content": 36.49,
-      "moisture_level": 30.17,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 16.57
-    },
-    "predicted_class": "Помірний стрес",
-    "confidence": 98.37695487819444,
-    "class_probabilities": {
-      "Критичний стрес": 0.002776777705212347,
-      "Помірний стрес": 0.9837695487819442,
-      "Легкий стрес": 0.0010183179499008645,
-      "Здорова рослина": 0.01243535556294252
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:05:23.300641",
-    "input_values": {
-      "fluorescence_intensity": 52.03,
-      "colorimetric_index": 0.5,
-      "spr_signal_strength": 89.48,
-      "leaf_temperature": 24.47,
-      "chlorophyll_content": 43.6,
-      "moisture_level": 20.33,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 14.51
-    },
-    "predicted_class": "Легкий стрес",
-    "confidence": 98.59522346949373,
-    "class_probabilities": {
-      "Критичний стрес": 0.003796794594434777,
-      "Помірний стрес": 0.00263153080166873,
-      "Легкий стрес": 0.9859522346949373,
-      "Здорова рослина": 0.007619439908959235
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:05:25.430879",
-    "input_values": {
-      "fluorescence_intensity": 53.03,
-      "colorimetric_index": 0.63,
-      "spr_signal_strength": 95.28,
-      "leaf_temperature": 22.63,
-      "chlorophyll_content": 40.44,
-      "moisture_level": 30.39,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.65
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 96.32811268216791,
-    "class_probabilities": {
-      "Критичний стрес": 0.01748973080685208,
-      "Помірний стрес": 0.011981430117577003,
-      "Легкий стрес": 0.007247712253891789,
-      "Здорова рослина": 0.9632811268216791
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:05:29.300350",
-    "input_values": {
-      "fluorescence_intensity": 52.03,
-      "colorimetric_index": 0.5,
-      "spr_signal_strength": 89.48,
-      "leaf_temperature": 24.47,
-      "chlorophyll_content": 43.6,
-      "moisture_level": 20.33,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 14.51
-    },
-    "predicted_class": "Легкий стрес",
-    "confidence": 98.59522346949373,
-    "class_probabilities": {
-      "Критичний стрес": 0.003796794594434777,
-      "Помірний стрес": 0.00263153080166873,
-      "Легкий стрес": 0.9859522346949373,
-      "Здорова рослина": 0.007619439908959235
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:05:31.150826",
-    "input_values": {
-      "fluorescence_intensity": 52.24,
-      "colorimetric_index": 0.64,
-      "spr_signal_strength": 120.54,
-      "leaf_temperature": 27.62,
-      "chlorophyll_content": 36.49,
-      "moisture_level": 30.17,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 16.57
-    },
-    "predicted_class": "Помірний стрес",
-    "confidence": 98.37695487819444,
-    "class_probabilities": {
-      "Критичний стрес": 0.002776777705212347,
-      "Помірний стрес": 0.9837695487819442,
-      "Легкий стрес": 0.0010183179499008645,
-      "Здорова рослина": 0.01243535556294252
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:11:36.875406",
-    "input_values": {
-      "fluorescence_intensity": 61.49,
-      "colorimetric_index": 0.64,
-      "spr_signal_strength": 104.49,
-      "leaf_temperature": 24.08,
-      "chlorophyll_content": 57.07,
-      "moisture_level": 32.04,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.23
-    },
-    "predicted_class": "Критичний стрес",
-    "confidence": 99.88153869441355,
-    "class_probabilities": {
-      "Критичний стрес": 0.9988153869441354,
-      "Помірний стрес": 8.88895228619675e-05,
-      "Легкий стрес": 8.330966701601947e-05,
-      "Здорова рослина": 0.00101241386598653
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:11:40.515461",
-    "input_values": {
-      "fluorescence_intensity": 52.24,
-      "colorimetric_index": 0.64,
-      "spr_signal_strength": 120.54,
-      "leaf_temperature": 27.62,
-      "chlorophyll_content": 36.49,
-      "moisture_level": 30.17,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 16.57
-    },
-    "predicted_class": "Помірний стрес",
-    "confidence": 98.55957193024378,
-    "class_probabilities": {
-      "Критичний стрес": 0.0022396202019976754,
-      "Помірний стрес": 0.9855957193024377,
-      "Легкий стрес": 0.0009975230447870258,
-      "Здорова рослина": 0.011167137450777674
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:11:43.280630",
-    "input_values": {
-      "fluorescence_intensity": 52.03,
-      "colorimetric_index": 0.5,
-      "spr_signal_strength": 89.48,
-      "leaf_temperature": 24.47,
-      "chlorophyll_content": 43.6,
-      "moisture_level": 20.33,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 14.51
-    },
-    "predicted_class": "Легкий стрес",
-    "confidence": 99.2013238042938,
-    "class_probabilities": {
-      "Критичний стрес": 0.0030864732367898154,
-      "Помірний стрес": 0.0030230447364863145,
-      "Легкий стрес": 0.9920132380429381,
-      "Здорова рослина": 0.0018772439837858846
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:11:45.831978",
-    "input_values": {
-      "fluorescence_intensity": 53.03,
-      "colorimetric_index": 0.63,
-      "spr_signal_strength": 95.28,
-      "leaf_temperature": 22.63,
-      "chlorophyll_content": 40.44,
-      "moisture_level": 30.39,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.65
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 97.75941301659317,
-    "class_probabilities": {
-      "Критичний стрес": 0.006869022638244608,
-      "Помірний стрес": 0.011725517620470973,
-      "Легкий стрес": 0.0038113295753526345,
-      "Здорова рослина": 0.9775941301659318
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:12:13.010455",
-    "input_values": {
-      "fluorescence_intensity": 52.03,
-      "colorimetric_index": 0.5,
-      "spr_signal_strength": 89.48,
-      "leaf_temperature": 24.47,
-      "chlorophyll_content": 43.6,
-      "moisture_level": 20.33,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 14.51
-    },
-    "predicted_class": "Легкий стрес",
-    "confidence": 99.2013238042938,
-    "class_probabilities": {
-      "Критичний стрес": 0.0030864732367898154,
-      "Помірний стрес": 0.0030230447364863145,
-      "Легкий стрес": 0.9920132380429381,
-      "Здорова рослина": 0.0018772439837858846
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:12:16.433212",
-    "input_values": {
-      "fluorescence_intensity": 52.24,
-      "colorimetric_index": 0.64,
-      "spr_signal_strength": 120.54,
-      "leaf_temperature": 27.62,
-      "chlorophyll_content": 36.49,
-      "moisture_level": 30.17,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 16.57
-    },
-    "predicted_class": "Помірний стрес",
-    "confidence": 98.55957193024378,
-    "class_probabilities": {
-      "Критичний стрес": 0.0022396202019976754,
-      "Помірний стрес": 0.9855957193024377,
-      "Легкий стрес": 0.0009975230447870258,
-      "Здорова рослина": 0.011167137450777674
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:12:25.991330",
-    "input_values": {
-      "fluorescence_intensity": 61.49,
-      "colorimetric_index": 0.64,
-      "spr_signal_strength": 104.49,
-      "leaf_temperature": 24.08,
-      "chlorophyll_content": 57.07,
-      "moisture_level": 32.04,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.23
-    },
-    "predicted_class": "Критичний стрес",
-    "confidence": 99.88153869441355,
-    "class_probabilities": {
-      "Критичний стрес": 0.9988153869441354,
-      "Помірний стрес": 8.88895228619675e-05,
-      "Легкий стрес": 8.330966701601947e-05,
-      "Здорова рослина": 0.00101241386598653
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:18:23.875081",
-    "input_values": {
-      "fluorescence_intensity": 61.49,
-      "colorimetric_index": 0.64,
-      "spr_signal_strength": 104.49,
-      "leaf_temperature": 24.08,
-      "chlorophyll_content": 57.07,
-      "moisture_level": 32.04,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.23
-    },
-    "predicted_class": "Критичний стрес",
-    "confidence": 99.92284143274537,
-    "class_probabilities": {
-      "Критичний стрес": 0.9992284143274537,
-      "Помірний стрес": 5.407069515176005e-05,
-      "Легкий стрес": 5.042957753672065e-05,
-      "Здорова рослина": 0.0006670853998578164
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:18:27.285210",
-    "input_values": {
-      "fluorescence_intensity": 52.24,
-      "colorimetric_index": 0.64,
-      "spr_signal_strength": 120.54,
-      "leaf_temperature": 27.62,
-      "chlorophyll_content": 36.49,
-      "moisture_level": 30.17,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 16.57
-    },
-    "predicted_class": "Помірний стрес",
-    "confidence": 98.86302373646525,
-    "class_probabilities": {
-      "Критичний стрес": 0.001797139424186412,
-      "Помірний стрес": 0.9886302373646527,
-      "Легкий стрес": 0.0008178719773056437,
-      "Здорова рослина": 0.008754751233855343
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:18:29.315170",
-    "input_values": {
-      "fluorescence_intensity": 52.03,
-      "colorimetric_index": 0.5,
-      "spr_signal_strength": 89.48,
-      "leaf_temperature": 24.47,
-      "chlorophyll_content": 43.6,
-      "moisture_level": 20.33,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 14.51
-    },
-    "predicted_class": "Легкий стрес",
-    "confidence": 99.72258752817234,
-    "class_probabilities": {
-      "Критичний стрес": 0.0007944374703455364,
-      "Помірний стрес": 0.0009244885199234311,
-      "Легкий стрес": 0.9972258752817235,
-      "Здорова рослина": 0.0010551987280075807
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:18:32.035273",
-    "input_values": {
-      "fluorescence_intensity": 53.03,
-      "colorimetric_index": 0.63,
-      "spr_signal_strength": 95.28,
-      "leaf_temperature": 22.63,
-      "chlorophyll_content": 40.44,
-      "moisture_level": 30.39,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.65
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 97.67407733990498,
-    "class_probabilities": {
-      "Критичний стрес": 0.010006124111798072,
-      "Помірний стрес": 0.009302756710106129,
-      "Легкий стрес": 0.003950345779045898,
-      "Здорова рослина": 0.9767407733990499
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:18:43.980480",
-    "input_values": {
-      "fluorescence_intensity": 52.03,
-      "colorimetric_index": 0.5,
-      "spr_signal_strength": 89.48,
-      "leaf_temperature": 24.47,
-      "chlorophyll_content": 43.6,
-      "moisture_level": 20.33,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 14.51
-    },
-    "predicted_class": "Легкий стрес",
-    "confidence": 99.72258752817234,
-    "class_probabilities": {
-      "Критичний стрес": 0.0007944374703455364,
-      "Помірний стрес": 0.0009244885199234311,
-      "Легкий стрес": 0.9972258752817235,
-      "Здорова рослина": 0.0010551987280075807
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:18:55.694104",
-    "input_values": {
-      "fluorescence_intensity": 52.24,
-      "colorimetric_index": 0.64,
-      "spr_signal_strength": 120.54,
-      "leaf_temperature": 27.62,
-      "chlorophyll_content": 36.49,
-      "moisture_level": 30.17,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 16.57
-    },
-    "predicted_class": "Помірний стрес",
-    "confidence": 98.86302373646525,
-    "class_probabilities": {
-      "Критичний стрес": 0.001797139424186412,
-      "Помірний стрес": 0.9886302373646527,
-      "Легкий стрес": 0.0008178719773056437,
-      "Здорова рослина": 0.008754751233855343
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:19:05.612397",
-    "input_values": {
-      "fluorescence_intensity": 61.49,
-      "colorimetric_index": 0.64,
-      "spr_signal_strength": 104.49,
-      "leaf_temperature": 24.08,
-      "chlorophyll_content": 57.07,
-      "moisture_level": 32.04,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.23
-    },
-    "predicted_class": "Критичний стрес",
-    "confidence": 99.92284143274537,
-    "class_probabilities": {
-      "Критичний стрес": 0.9992284143274537,
-      "Помірний стрес": 5.407069515176005e-05,
-      "Легкий стрес": 5.042957753672065e-05,
-      "Здорова рослина": 0.0006670853998578164
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:39:36.690331",
-    "input_values": {
-      "fluorescence_intensity": 61.49,
-      "colorimetric_index": 0.64,
-      "spr_signal_strength": 104.49,
-      "leaf_temperature": 24.08,
-      "chlorophyll_content": 57.07,
-      "moisture_level": 32.04,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.23
-    },
-    "predicted_class": "Критичний стрес",
-    "confidence": 99.92284143274537,
-    "class_probabilities": {
-      "Критичний стрес": 0.9992284143274537,
-      "Помірний стрес": 5.407069515176005e-05,
-      "Легкий стрес": 5.042957753672065e-05,
-      "Здорова рослина": 0.0006670853998578164
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:39:43.129932",
-    "input_values": {
-      "fluorescence_intensity": 52.24,
-      "colorimetric_index": 0.64,
-      "spr_signal_strength": 120.54,
-      "leaf_temperature": 27.62,
-      "chlorophyll_content": 36.49,
-      "moisture_level": 30.17,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 16.57
-    },
-    "predicted_class": "Помірний стрес",
-    "confidence": 98.86302373646525,
-    "class_probabilities": {
-      "Критичний стрес": 0.001797139424186412,
-      "Помірний стрес": 0.9886302373646527,
-      "Легкий стрес": 0.0008178719773056437,
-      "Здорова рослина": 0.008754751233855343
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:39:46.720023",
-    "input_values": {
-      "fluorescence_intensity": 52.03,
-      "colorimetric_index": 0.5,
-      "spr_signal_strength": 89.48,
-      "leaf_temperature": 24.47,
-      "chlorophyll_content": 43.6,
-      "moisture_level": 20.33,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 14.51
-    },
-    "predicted_class": "Легкий стрес",
-    "confidence": 99.72258752817234,
-    "class_probabilities": {
-      "Критичний стрес": 0.0007944374703455364,
-      "Помірний стрес": 0.0009244885199234311,
-      "Легкий стрес": 0.9972258752817235,
-      "Здорова рослина": 0.0010551987280075807
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:39:52.605199",
-    "input_values": {
-      "fluorescence_intensity": 53.03,
-      "colorimetric_index": 0.63,
-      "spr_signal_strength": 95.28,
-      "leaf_temperature": 22.63,
-      "chlorophyll_content": 40.44,
-      "moisture_level": 30.39,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.65
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 97.67407733990498,
-    "class_probabilities": {
-      "Критичний стрес": 0.010006124111798072,
-      "Помірний стрес": 0.009302756710106129,
-      "Легкий стрес": 0.003950345779045898,
-      "Здорова рослина": 0.9767407733990499
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:39:57.160118",
-    "input_values": {
-      "fluorescence_intensity": 61.49,
-      "colorimetric_index": 0.64,
-      "spr_signal_strength": 104.49,
-      "leaf_temperature": 24.08,
-      "chlorophyll_content": 57.07,
-      "moisture_level": 32.04,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.23
-    },
-    "predicted_class": "Критичний стрес",
-    "confidence": 99.92284143274537,
-    "class_probabilities": {
-      "Критичний стрес": 0.9992284143274537,
-      "Помірний стрес": 5.407069515176005e-05,
-      "Легкий стрес": 5.042957753672065e-05,
-      "Здорова рослина": 0.0006670853998578164
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:42:46.694841",
-    "input_values": {
-      "fluorescence_intensity": 53.03,
-      "colorimetric_index": 0.63,
-      "spr_signal_strength": 95.28,
-      "leaf_temperature": 22.63,
-      "chlorophyll_content": 40.44,
-      "moisture_level": 30.39,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.65
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 97.67407733990498,
-    "class_probabilities": {
-      "Критичний стрес": 0.010006124111798072,
-      "Помірний стрес": 0.009302756710106129,
-      "Легкий стрес": 0.003950345779045898,
-      "Здорова рослина": 0.9767407733990499
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:42:53.845091",
+    "timestamp": "2026-06-06T11:51:51.844966",
     "input_values": {
       "fluorescence_intensity": 73.03,
       "colorimetric_index": 0.63,
-      "spr_signal_strength": 95.28,
-      "leaf_temperature": 22.63,
-      "chlorophyll_content": 40.44,
-      "moisture_level": 30.39,
+      "spr_signal_strength": 55.28,
+      "leaf_temperature": 17.63,
+      "chlorophyll_content": 30.44,
+      "moisture_level": 36.39,
       "light_absorption_ratio": 0.71,
       "volatile_organic_compounds": 13.65
     },
     "predicted_class": "Здорова рослина",
-    "confidence": 95.05127014794084,
+    "confidence": 99.05334071004714,
     "class_probabilities": {
-      "Критичний стрес": 0.030087707382095888,
-      "Помірний стрес": 0.012670101521205474,
-      "Легкий стрес": 0.006729489617290271,
-      "Здорова рослина": 0.9505127014794084
+      "Критичний стрес": 0.006117587604318268,
+      "Помірний стрес": 0.0012222104563171915,
+      "Легкий стрес": 0.0021267948388931177,
+      "Здорова рослина": 0.9905334071004714
     }
   },
   {
-    "timestamp": "2026-06-06T05:43:07.089816",
-    "input_values": {
-      "fluorescence_intensity": 61.03,
-      "colorimetric_index": 0.63,
-      "spr_signal_strength": 111.28,
-      "leaf_temperature": 22.63,
-      "chlorophyll_content": 40.44,
-      "moisture_level": 30.39,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.65
-    },
-    "predicted_class": "Помірний стрес",
-    "confidence": 86.93312975359913,
-    "class_probabilities": {
-      "Критичний стрес": 0.01957273035586277,
-      "Помірний стрес": 0.8693312975359915,
-      "Легкий стрес": 0.004025556757512065,
-      "Здорова рослина": 0.10707041535063387
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:43:16.250209",
-    "input_values": {
-      "fluorescence_intensity": 61.03,
-      "colorimetric_index": 0.63,
-      "spr_signal_strength": 100.28,
-      "leaf_temperature": 22.63,
-      "chlorophyll_content": 40.44,
-      "moisture_level": 30.39,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.65
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 95.4752266407013,
-    "class_probabilities": {
-      "Критичний стрес": 0.026001224294304848,
-      "Помірний стрес": 0.014980044215917587,
-      "Легкий стрес": 0.0042664650827646255,
-      "Здорова рослина": 0.9547522664070129
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:43:26.620079",
-    "input_values": {
-      "fluorescence_intensity": 61.03,
-      "colorimetric_index": 0.63,
-      "spr_signal_strength": 100.28,
-      "leaf_temperature": 28.63,
-      "chlorophyll_content": 40.44,
-      "moisture_level": 30.39,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.65
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 90.34592686915272,
-    "class_probabilities": {
-      "Критичний стрес": 0.05065966189608417,
-      "Помірний стрес": 0.03872870996401761,
-      "Легкий стрес": 0.0071523594483710136,
-      "Здорова рослина": 0.9034592686915273
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:43:38.385031",
-    "input_values": {
-      "fluorescence_intensity": 70.03,
-      "colorimetric_index": 0.63,
-      "spr_signal_strength": 100.28,
-      "leaf_temperature": 28.63,
-      "chlorophyll_content": 40.44,
-      "moisture_level": 30.39,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.65
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 90.52615249179962,
-    "class_probabilities": {
-      "Критичний стрес": 0.0332252414763104,
-      "Помірний стрес": 0.05274196948029396,
-      "Легкий стрес": 0.008771264125399502,
-      "Здорова рослина": 0.9052615249179962
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:43:45.410160",
-    "input_values": {
-      "fluorescence_intensity": 70.03,
-      "colorimetric_index": 0.7,
-      "spr_signal_strength": 100.28,
-      "leaf_temperature": 28.63,
-      "chlorophyll_content": 40.44,
-      "moisture_level": 30.39,
-      "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.65
-    },
-    "predicted_class": "Здорова рослина",
-    "confidence": 89.01602365109916,
-    "class_probabilities": {
-      "Критичний стрес": 0.037345943116580356,
-      "Помірний стрес": 0.0633529547382031,
-      "Легкий стрес": 0.00914086563422496,
-      "Здорова рослина": 0.8901602365109916
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:48:15.679859",
+    "timestamp": "2026-06-06T11:57:36.305123",
     "input_values": {
       "fluorescence_intensity": 61.49,
       "colorimetric_index": 0.64,
@@ -1356,79 +117,37 @@
       "volatile_organic_compounds": 13.23
     },
     "predicted_class": "Критичний стрес",
-    "confidence": 99.78486641769133,
+    "confidence": 99.88766417809866,
     "class_probabilities": {
-      "Критичний стрес": 0.9978486641769135,
-      "Помірний стрес": 0.0002717669749849249,
-      "Легкий стрес": 0.0004451143927592445,
-      "Здорова рослина": 0.0014344544553424369
+      "Критичний стрес": 0.9988766417809866,
+      "Помірний стрес": 0.00023159681449566244,
+      "Легкий стрес": 0.00016097779915109713,
+      "Здорова рослина": 0.0007307836053665805
     }
   },
   {
-    "timestamp": "2026-06-06T05:48:19.020070",
+    "timestamp": "2026-06-06T11:57:47.999184",
     "input_values": {
-      "fluorescence_intensity": 52.24,
+      "fluorescence_intensity": 41.49,
       "colorimetric_index": 0.64,
-      "spr_signal_strength": 120.54,
-      "leaf_temperature": 27.62,
-      "chlorophyll_content": 36.49,
-      "moisture_level": 30.17,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 16.57
-    },
-    "predicted_class": "Помірний стрес",
-    "confidence": 97.53646865347099,
-    "class_probabilities": {
-      "Критичний стрес": 0.0031839816413577367,
-      "Помірний стрес": 0.9753646865347099,
-      "Легкий стрес": 0.0011851658364067734,
-      "Здорова рослина": 0.02026616598752562
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:48:22.380077",
-    "input_values": {
-      "fluorescence_intensity": 52.03,
-      "colorimetric_index": 0.5,
-      "spr_signal_strength": 89.48,
-      "leaf_temperature": 24.47,
-      "chlorophyll_content": 43.6,
-      "moisture_level": 20.33,
-      "light_absorption_ratio": 0.74,
-      "volatile_organic_compounds": 14.51
-    },
-    "predicted_class": "Легкий стрес",
-    "confidence": 99.19834696930732,
-    "class_probabilities": {
-      "Критичний стрес": 0.0036835653718046194,
-      "Помірний стрес": 0.0013192594650893014,
-      "Легкий стрес": 0.9919834696930732,
-      "Здорова рослина": 0.00301370547003288
-    }
-  },
-  {
-    "timestamp": "2026-06-06T05:48:26.279839",
-    "input_values": {
-      "fluorescence_intensity": 53.03,
-      "colorimetric_index": 0.63,
-      "spr_signal_strength": 95.28,
-      "leaf_temperature": 22.63,
-      "chlorophyll_content": 40.44,
-      "moisture_level": 30.39,
+      "spr_signal_strength": 104.49,
+      "leaf_temperature": 24.08,
+      "chlorophyll_content": 57.07,
+      "moisture_level": 32.04,
       "light_absorption_ratio": 0.71,
-      "volatile_organic_compounds": 13.65
+      "volatile_organic_compounds": 13.23
     },
     "predicted_class": "Здорова рослина",
-    "confidence": 96.29049973728831,
+    "confidence": 99.3594614760377,
     "class_probabilities": {
-      "Критичний стрес": 0.01801417148771031,
-      "Помірний стрес": 0.012636176261783783,
-      "Легкий стрес": 0.0064446548776227195,
-      "Здорова рослина": 0.9629049973728832
+      "Критичний стрес": 0.0017109573272985515,
+      "Помірний стрес": 0.003014928797947884,
+      "Легкий стрес": 0.0016794991143766374,
+      "Здорова рослина": 0.9935946147603769
     }
   },
   {
-    "timestamp": "2026-06-06T06:09:41.751203",
+    "timestamp": "2026-06-06T12:00:06.514385",
     "input_values": {
       "fluorescence_intensity": 61.49,
       "colorimetric_index": 0.64,
@@ -1440,16 +159,16 @@
       "volatile_organic_compounds": 13.23
     },
     "predicted_class": "Критичний стрес",
-    "confidence": 99.78486641769133,
+    "confidence": 56.297410788612645,
     "class_probabilities": {
-      "Критичний стрес": 0.9978486641769135,
-      "Помірний стрес": 0.0002717669749849249,
-      "Легкий стрес": 0.0004451143927592445,
-      "Здорова рослина": 0.0014344544553424369
+      "Критичний стрес": 0.5629741078861265,
+      "Помірний стрес": 0.1530014251865291,
+      "Легкий стрес": 0.1500304352274963,
+      "Здорова рослина": 0.13399403169984822
     }
   },
   {
-    "timestamp": "2026-06-06T06:09:58.991016",
+    "timestamp": "2026-06-06T12:00:09.761119",
     "input_values": {
       "fluorescence_intensity": 52.24,
       "colorimetric_index": 0.64,
@@ -1461,16 +180,16 @@
       "volatile_organic_compounds": 16.57
     },
     "predicted_class": "Помірний стрес",
-    "confidence": 97.53646865347099,
+    "confidence": 44.58756513279029,
     "class_probabilities": {
-      "Критичний стрес": 0.0031839816413577367,
-      "Помірний стрес": 0.9753646865347099,
-      "Легкий стрес": 0.0011851658364067734,
-      "Здорова рослина": 0.02026616598752562
+      "Критичний стрес": 0.17617871129779086,
+      "Помірний стрес": 0.44587565132790286,
+      "Легкий стрес": 0.1715430642894367,
+      "Здорова рослина": 0.2064025730848696
     }
   },
   {
-    "timestamp": "2026-06-06T06:10:13.486436",
+    "timestamp": "2026-06-06T12:00:12.442331",
     "input_values": {
       "fluorescence_intensity": 52.03,
       "colorimetric_index": 0.5,
@@ -1482,16 +201,16 @@
       "volatile_organic_compounds": 14.51
     },
     "predicted_class": "Легкий стрес",
-    "confidence": 99.19834696930732,
+    "confidence": 53.353981940925536,
     "class_probabilities": {
-      "Критичний стрес": 0.0036835653718046194,
-      "Помірний стрес": 0.0013192594650893014,
-      "Легкий стрес": 0.9919834696930732,
-      "Здорова рослина": 0.00301370547003288
+      "Критичний стрес": 0.16373630260262656,
+      "Помірний стрес": 0.1611633602867799,
+      "Легкий стрес": 0.5335398194092552,
+      "Здорова рослина": 0.14156051770133826
     }
   },
   {
-    "timestamp": "2026-06-06T06:10:23.501090",
+    "timestamp": "2026-06-06T12:00:15.138750",
     "input_values": {
       "fluorescence_intensity": 53.03,
       "colorimetric_index": 0.63,
@@ -1503,12 +222,642 @@
       "volatile_organic_compounds": 13.65
     },
     "predicted_class": "Здорова рослина",
-    "confidence": 96.29049973728831,
+    "confidence": 40.190279483795166,
     "class_probabilities": {
-      "Критичний стрес": 0.01801417148771031,
-      "Помірний стрес": 0.012636176261783783,
-      "Легкий стрес": 0.0064446548776227195,
-      "Здорова рослина": 0.9629049973728832
+      "Критичний стрес": 0.1984747350215912,
+      "Помірний стрес": 0.2060786634683609,
+      "Легкий стрес": 0.19354380667209625,
+      "Здорова рослина": 0.40190279483795166
+    }
+  },
+  {
+    "timestamp": "2026-06-06T12:00:17.477726",
+    "input_values": {
+      "fluorescence_intensity": 61.49,
+      "colorimetric_index": 0.64,
+      "spr_signal_strength": 104.49,
+      "leaf_temperature": 24.08,
+      "chlorophyll_content": 57.07,
+      "moisture_level": 32.04,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.23
+    },
+    "predicted_class": "Критичний стрес",
+    "confidence": 56.297410788612645,
+    "class_probabilities": {
+      "Критичний стрес": 0.5629741078861265,
+      "Помірний стрес": 0.1530014251865291,
+      "Легкий стрес": 0.1500304352274963,
+      "Здорова рослина": 0.13399403169984822
+    }
+  },
+  {
+    "timestamp": "2026-06-06T12:00:22.638243",
+    "input_values": {
+      "fluorescence_intensity": 60.49,
+      "colorimetric_index": 0.64,
+      "spr_signal_strength": 104.49,
+      "leaf_temperature": 24.08,
+      "chlorophyll_content": 57.07,
+      "moisture_level": 32.04,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.23
+    },
+    "predicted_class": "Критичний стрес",
+    "confidence": 55.14222884913301,
+    "class_probabilities": {
+      "Критичний стрес": 0.55142228849133,
+      "Помірний стрес": 0.15542212747106246,
+      "Легкий стрес": 0.15387186246097298,
+      "Здорова рослина": 0.13928372157663446
+    }
+  },
+  {
+    "timestamp": "2026-06-06T12:00:27.388398",
+    "input_values": {
+      "fluorescence_intensity": 62.49,
+      "colorimetric_index": 0.64,
+      "spr_signal_strength": 104.49,
+      "leaf_temperature": 24.08,
+      "chlorophyll_content": 57.07,
+      "moisture_level": 32.04,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.23
+    },
+    "predicted_class": "Критичний стрес",
+    "confidence": 57.23638800952432,
+    "class_probabilities": {
+      "Критичний стрес": 0.5723638800952432,
+      "Помірний стрес": 0.15101613458508997,
+      "Легкий стрес": 0.14684658553887156,
+      "Здорова рослина": 0.12977339978079533
+    }
+  },
+  {
+    "timestamp": "2026-06-06T12:00:35.220476",
+    "input_values": {
+      "fluorescence_intensity": 62.49,
+      "colorimetric_index": 0.8,
+      "spr_signal_strength": 104.49,
+      "leaf_temperature": 24.08,
+      "chlorophyll_content": 57.07,
+      "moisture_level": 32.04,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.23
+    },
+    "predicted_class": "Критичний стрес",
+    "confidence": 63.68792780187255,
+    "class_probabilities": {
+      "Критичний стрес": 0.6368792780187255,
+      "Помірний стрес": 0.13504077250532864,
+      "Легкий стрес": 0.13358408000659755,
+      "Здорова рослина": 0.09449586946934826
+    }
+  },
+  {
+    "timestamp": "2026-06-06T12:00:53.178819",
+    "input_values": {
+      "fluorescence_intensity": 53.03,
+      "colorimetric_index": 0.63,
+      "spr_signal_strength": 95.28,
+      "leaf_temperature": 22.63,
+      "chlorophyll_content": 40.44,
+      "moisture_level": 30.39,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.65
+    },
+    "predicted_class": "Здорова рослина",
+    "confidence": 40.190279483795166,
+    "class_probabilities": {
+      "Критичний стрес": 0.1984747350215912,
+      "Помірний стрес": 0.2060786634683609,
+      "Легкий стрес": 0.19354380667209625,
+      "Здорова рослина": 0.40190279483795166
+    }
+  },
+  {
+    "timestamp": "2026-06-06T12:01:24.389500",
+    "input_values": {
+      "fluorescence_intensity": 53.03,
+      "colorimetric_index": 0.63,
+      "spr_signal_strength": 95.28,
+      "leaf_temperature": 22.63,
+      "chlorophyll_content": 40.44,
+      "moisture_level": 30.39,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 18.65
+    },
+    "predicted_class": "Здорова рослина",
+    "confidence": 40.99620282649994,
+    "class_probabilities": {
+      "Критичний стрес": 0.19517706334590912,
+      "Помірний стрес": 0.2053987681865692,
+      "Легкий стрес": 0.18946214020252228,
+      "Здорова рослина": 0.4099620282649994
+    }
+  },
+  {
+    "timestamp": "2026-06-06T12:01:30.378791",
+    "input_values": {
+      "fluorescence_intensity": 53.03,
+      "colorimetric_index": 0.63,
+      "spr_signal_strength": 95.28,
+      "leaf_temperature": 22.63,
+      "chlorophyll_content": 40.44,
+      "moisture_level": 30.39,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 18.63
+    },
+    "predicted_class": "Здорова рослина",
+    "confidence": 40.989927068202604,
+    "class_probabilities": {
+      "Критичний стрес": 0.19521746330287254,
+      "Помірний стрес": 0.2054068029732526,
+      "Легкий стрес": 0.1894764630418489,
+      "Здорова рослина": 0.40989927068202603
+    }
+  },
+  {
+    "timestamp": "2026-06-06T12:01:35.983551",
+    "input_values": {
+      "fluorescence_intensity": 53.03,
+      "colorimetric_index": 0.63,
+      "spr_signal_strength": 95.28,
+      "leaf_temperature": 22.63,
+      "chlorophyll_content": 40.44,
+      "moisture_level": 30.39,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 18.6
+    },
+    "predicted_class": "Здорова рослина",
+    "confidence": 40.980806946754456,
+    "class_probabilities": {
+      "Критичний стрес": 0.1952688843011856,
+      "Помірний стрес": 0.20541466772556305,
+      "Легкий стрес": 0.1895083785057068,
+      "Здорова рослина": 0.40980806946754456
+    }
+  },
+  {
+    "timestamp": "2026-06-06T12:01:41.937160",
+    "input_values": {
+      "fluorescence_intensity": 53.03,
+      "colorimetric_index": 0.63,
+      "spr_signal_strength": 105.28,
+      "leaf_temperature": 22.63,
+      "chlorophyll_content": 40.44,
+      "moisture_level": 30.39,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 18.6
+    },
+    "predicted_class": "Здорова рослина",
+    "confidence": 38.47116942617802,
+    "class_probabilities": {
+      "Критичний стрес": 0.19250158049170912,
+      "Помірний стрес": 0.23190141415302198,
+      "Легкий стрес": 0.19088531109348866,
+      "Здорова рослина": 0.3847116942617802
+    }
+  },
+  {
+    "timestamp": "2026-06-06T12:37:51.614965",
+    "input_values": {
+      "fluorescence_intensity": 61.49,
+      "colorimetric_index": 0.64,
+      "spr_signal_strength": 104.49,
+      "leaf_temperature": 24.08,
+      "chlorophyll_content": 57.07,
+      "moisture_level": 32.04,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.23
+    },
+    "predicted_class": "Критичний стрес",
+    "confidence": 53.83550873386783,
+    "class_probabilities": {
+      "Критичний стрес": 0.5383550873386783,
+      "Помірний стрес": 0.154418735946797,
+      "Легкий стрес": 0.16077477111864474,
+      "Здорова рослина": 0.14645140559587996
+    }
+  },
+  {
+    "timestamp": "2026-06-06T13:42:03.284094",
+    "input_values": {
+      "fluorescence_intensity": 61.49,
+      "colorimetric_index": 0.64,
+      "spr_signal_strength": 104.49,
+      "leaf_temperature": 24.08,
+      "chlorophyll_content": 57.07,
+      "moisture_level": 32.04,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.23
+    },
+    "predicted_class": "Критичний стрес",
+    "confidence": 55.405127032121534,
+    "class_probabilities": {
+      "Критичний стрес": 0.5540512703212153,
+      "Помірний стрес": 0.15093223169045103,
+      "Легкий стрес": 0.15485951049268842,
+      "Здорова рослина": 0.14015698749564517
+    }
+  },
+  {
+    "timestamp": "2026-06-06T13:42:06.908843",
+    "input_values": {
+      "fluorescence_intensity": 52.24,
+      "colorimetric_index": 0.64,
+      "spr_signal_strength": 120.54,
+      "leaf_temperature": 27.62,
+      "chlorophyll_content": 36.49,
+      "moisture_level": 30.17,
+      "light_absorption_ratio": 0.74,
+      "volatile_organic_compounds": 16.57
+    },
+    "predicted_class": "Помірний стрес",
+    "confidence": 37.54982594326398,
+    "class_probabilities": {
+      "Критичний стрес": 0.20945588932252096,
+      "Помірний стрес": 0.3754982594326398,
+      "Легкий стрес": 0.18740369100267154,
+      "Здорова рослина": 0.2276421602421677
+    }
+  },
+  {
+    "timestamp": "2026-06-06T13:42:09.058693",
+    "input_values": {
+      "fluorescence_intensity": 52.03,
+      "colorimetric_index": 0.5,
+      "spr_signal_strength": 89.48,
+      "leaf_temperature": 24.47,
+      "chlorophyll_content": 43.6,
+      "moisture_level": 20.33,
+      "light_absorption_ratio": 0.74,
+      "volatile_organic_compounds": 14.51
+    },
+    "predicted_class": "Легкий стрес",
+    "confidence": 52.571187053108694,
+    "class_probabilities": {
+      "Критичний стрес": 0.1701681011026543,
+      "Помірний стрес": 0.16550085954450208,
+      "Легкий стрес": 0.5257118705310869,
+      "Здорова рослина": 0.13861916882175668
+    }
+  },
+  {
+    "timestamp": "2026-06-06T13:42:10.920370",
+    "input_values": {
+      "fluorescence_intensity": 53.03,
+      "colorimetric_index": 0.63,
+      "spr_signal_strength": 95.28,
+      "leaf_temperature": 22.63,
+      "chlorophyll_content": 40.44,
+      "moisture_level": 30.39,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.65
+    },
+    "predicted_class": "Здорова рослина",
+    "confidence": 36.08073455456203,
+    "class_probabilities": {
+      "Критичний стрес": 0.23177860223257254,
+      "Помірний стрес": 0.19957494137771165,
+      "Легкий стрес": 0.20783911084409554,
+      "Здорова рослина": 0.3608073455456203
+    }
+  },
+  {
+    "timestamp": "2026-06-06T13:58:06.078548",
+    "input_values": {
+      "fluorescence_intensity": 61.49,
+      "colorimetric_index": 0.64,
+      "spr_signal_strength": 104.49,
+      "leaf_temperature": 24.08,
+      "chlorophyll_content": 57.07,
+      "moisture_level": 32.04,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.23
+    },
+    "predicted_class": "Критичний стрес",
+    "confidence": 99.70768890048487,
+    "class_probabilities": {
+      "Критичний стрес": 0.9970768890048487,
+      "Помірний стрес": 6.83875200664334e-05,
+      "Легкий стрес": 0.00011285900335525666,
+      "Здорова рослина": 0.00274186447172963
+    }
+  },
+  {
+    "timestamp": "2026-06-06T13:58:09.408813",
+    "input_values": {
+      "fluorescence_intensity": 52.24,
+      "colorimetric_index": 0.64,
+      "spr_signal_strength": 120.54,
+      "leaf_temperature": 27.62,
+      "chlorophyll_content": 36.49,
+      "moisture_level": 30.17,
+      "light_absorption_ratio": 0.74,
+      "volatile_organic_compounds": 16.57
+    },
+    "predicted_class": "Помірний стрес",
+    "confidence": 98.50300401708797,
+    "class_probabilities": {
+      "Критичний стрес": 0.003615507349805904,
+      "Помірний стрес": 0.9850300401708797,
+      "Легкий стрес": 0.0006575047821913199,
+      "Здорова рослина": 0.010696947697123102
+    }
+  },
+  {
+    "timestamp": "2026-06-06T13:58:11.733638",
+    "input_values": {
+      "fluorescence_intensity": 52.03,
+      "colorimetric_index": 0.5,
+      "spr_signal_strength": 89.48,
+      "leaf_temperature": 24.47,
+      "chlorophyll_content": 43.6,
+      "moisture_level": 20.33,
+      "light_absorption_ratio": 0.74,
+      "volatile_organic_compounds": 14.51
+    },
+    "predicted_class": "Легкий стрес",
+    "confidence": 97.70700727908283,
+    "class_probabilities": {
+      "Критичний стрес": 0.0010690813568690442,
+      "Помірний стрес": 0.0010127334250213283,
+      "Легкий стрес": 0.9770700727908282,
+      "Здорова рослина": 0.020848112427281414
+    }
+  },
+  {
+    "timestamp": "2026-06-06T14:16:00.696011",
+    "input_values": {
+      "fluorescence_intensity": 61.49,
+      "colorimetric_index": 0.64,
+      "spr_signal_strength": 104.49,
+      "leaf_temperature": 24.08,
+      "chlorophyll_content": 57.07,
+      "moisture_level": 32.04,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.23
+    },
+    "predicted_class": "Критичний стрес",
+    "confidence": 96.45865989699827,
+    "class_probabilities": {
+      "Критичний стрес": 0.9645865989699827,
+      "Помірний стрес": 0.0009253589046135828,
+      "Легкий стрес": 0.005794666860291389,
+      "Здорова рослина": 0.028693375265112363
+    }
+  },
+  {
+    "timestamp": "2026-06-06T14:16:03.354467",
+    "input_values": {
+      "fluorescence_intensity": 52.24,
+      "colorimetric_index": 0.64,
+      "spr_signal_strength": 120.54,
+      "leaf_temperature": 27.62,
+      "chlorophyll_content": 36.49,
+      "moisture_level": 30.17,
+      "light_absorption_ratio": 0.74,
+      "volatile_organic_compounds": 16.57
+    },
+    "predicted_class": "Помірний стрес",
+    "confidence": 89.65498344937257,
+    "class_probabilities": {
+      "Критичний стрес": 0.042864297543596205,
+      "Помірний стрес": 0.8965498344937257,
+      "Легкий стрес": 0.0055102941740226875,
+      "Здорова рослина": 0.05507557378865533
+    }
+  },
+  {
+    "timestamp": "2026-06-06T14:16:05.264765",
+    "input_values": {
+      "fluorescence_intensity": 52.03,
+      "colorimetric_index": 0.5,
+      "spr_signal_strength": 89.48,
+      "leaf_temperature": 24.47,
+      "chlorophyll_content": 43.6,
+      "moisture_level": 20.33,
+      "light_absorption_ratio": 0.74,
+      "volatile_organic_compounds": 14.51
+    },
+    "predicted_class": "Легкий стрес",
+    "confidence": 88.61801190589192,
+    "class_probabilities": {
+      "Критичний стрес": 0.03662017129599272,
+      "Помірний стрес": 0.028973392064307265,
+      "Легкий стрес": 0.8861801190589192,
+      "Здорова рослина": 0.04822631758078083
+    }
+  },
+  {
+    "timestamp": "2026-06-06T14:16:07.174303",
+    "input_values": {
+      "fluorescence_intensity": 53.03,
+      "colorimetric_index": 0.63,
+      "spr_signal_strength": 95.28,
+      "leaf_temperature": 22.63,
+      "chlorophyll_content": 40.44,
+      "moisture_level": 30.39,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.65
+    },
+    "predicted_class": "Здорова рослина",
+    "confidence": 85.51076121375819,
+    "class_probabilities": {
+      "Критичний стрес": 0.05972399876875486,
+      "Помірний стрес": 0.05927252683372283,
+      "Легкий стрес": 0.025895862259940335,
+      "Здорова рослина": 0.8551076121375819
+    }
+  },
+  {
+    "timestamp": "2026-06-06T14:16:13.029667",
+    "input_values": {
+      "fluorescence_intensity": 59.03,
+      "colorimetric_index": 0.63,
+      "spr_signal_strength": 95.28,
+      "leaf_temperature": 22.63,
+      "chlorophyll_content": 40.44,
+      "moisture_level": 30.39,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.65
+    },
+    "predicted_class": "Здорова рослина",
+    "confidence": 77.62365346502145,
+    "class_probabilities": {
+      "Критичний стрес": 0.13246468677024392,
+      "Помірний стрес": 0.06750708907229078,
+      "Легкий стрес": 0.023791689507250767,
+      "Здорова рослина": 0.7762365346502145
+    }
+  },
+  {
+    "timestamp": "2026-06-06T14:16:16.979497",
+    "input_values": {
+      "fluorescence_intensity": 55.03,
+      "colorimetric_index": 0.63,
+      "spr_signal_strength": 95.28,
+      "leaf_temperature": 22.63,
+      "chlorophyll_content": 40.44,
+      "moisture_level": 30.39,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.65
+    },
+    "predicted_class": "Здорова рослина",
+    "confidence": 84.2717680338969,
+    "class_probabilities": {
+      "Критичний стрес": 0.07089105673892662,
+      "Помірний стрес": 0.06095119674618466,
+      "Легкий стрес": 0.025440066175919623,
+      "Здорова рослина": 0.8427176803389691
+    }
+  },
+  {
+    "timestamp": "2026-06-06T14:16:22.949507",
+    "input_values": {
+      "fluorescence_intensity": 55.03,
+      "colorimetric_index": 0.69,
+      "spr_signal_strength": 95.28,
+      "leaf_temperature": 22.63,
+      "chlorophyll_content": 40.44,
+      "moisture_level": 30.39,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.65
+    },
+    "predicted_class": "Здорова рослина",
+    "confidence": 84.53491268828095,
+    "class_probabilities": {
+      "Критичний стрес": 0.08022387016880042,
+      "Помірний стрес": 0.07253496958779178,
+      "Легкий стрес": 0.0018920333605982565,
+      "Здорова рослина": 0.8453491268828096
+    }
+  },
+  {
+    "timestamp": "2026-06-06T14:16:29.541485",
+    "input_values": {
+      "fluorescence_intensity": 55.03,
+      "colorimetric_index": 0.69,
+      "spr_signal_strength": 95.28,
+      "leaf_temperature": 29.63,
+      "chlorophyll_content": 40.44,
+      "moisture_level": 30.39,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.65
+    },
+    "predicted_class": "Здорова рослина",
+    "confidence": 84.66004805489648,
+    "class_probabilities": {
+      "Критичний стрес": 0.07267745999258872,
+      "Помірний стрес": 0.0776941189280961,
+      "Легкий стрес": 0.0030279405303504448,
+      "Здорова рослина": 0.8466004805489648
+    }
+  },
+  {
+    "timestamp": "2026-06-06T14:16:36.484393",
+    "input_values": {
+      "fluorescence_intensity": 55.03,
+      "colorimetric_index": 0.69,
+      "spr_signal_strength": 95.28,
+      "leaf_temperature": 29.63,
+      "chlorophyll_content": 50.44,
+      "moisture_level": 30.39,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.65
+    },
+    "predicted_class": "Критичний стрес",
+    "confidence": 86.08930249746368,
+    "class_probabilities": {
+      "Критичний стрес": 0.8608930249746368,
+      "Помірний стрес": 0.019910934101342242,
+      "Легкий стрес": 0.000601003819787135,
+      "Здорова рослина": 0.11859503710423386
+    }
+  },
+  {
+    "timestamp": "2026-06-06T14:16:43.029406",
+    "input_values": {
+      "fluorescence_intensity": 55.03,
+      "colorimetric_index": 0.69,
+      "spr_signal_strength": 95.28,
+      "leaf_temperature": 29.63,
+      "chlorophyll_content": 45.44,
+      "moisture_level": 30.39,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.65
+    },
+    "predicted_class": "Критичний стрес",
+    "confidence": 67.42025262800166,
+    "class_probabilities": {
+      "Критичний стрес": 0.6742025262800166,
+      "Помірний стрес": 0.06129971075346681,
+      "Легкий стрес": 0.0025811959486216024,
+      "Здорова рослина": 0.2619165670178949
+    }
+  },
+  {
+    "timestamp": "2026-06-06T14:16:50.044411",
+    "input_values": {
+      "fluorescence_intensity": 55.03,
+      "colorimetric_index": 0.69,
+      "spr_signal_strength": 95.28,
+      "leaf_temperature": 29.63,
+      "chlorophyll_content": 45.44,
+      "moisture_level": 20.39,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 13.65
+    },
+    "predicted_class": "Здорова рослина",
+    "confidence": 74.4473769553515,
+    "class_probabilities": {
+      "Критичний стрес": 0.16662105277605668,
+      "Помірний стрес": 0.08514989475979602,
+      "Легкий стрес": 0.003755282910632422,
+      "Здорова рослина": 0.744473769553515
+    }
+  },
+  {
+    "timestamp": "2026-06-06T14:17:02.334809",
+    "input_values": {
+      "fluorescence_intensity": 55.03,
+      "colorimetric_index": 0.69,
+      "spr_signal_strength": 95.28,
+      "leaf_temperature": 29.63,
+      "chlorophyll_content": 45.44,
+      "moisture_level": 20.39,
+      "light_absorption_ratio": 0.71,
+      "volatile_organic_compounds": 15.65
+    },
+    "predicted_class": "Здорова рослина",
+    "confidence": 74.80557578205462,
+    "class_probabilities": {
+      "Критичний стрес": 0.16819311318666974,
+      "Помірний стрес": 0.0804125328191703,
+      "Легкий стрес": 0.0033385961736138526,
+      "Здорова рослина": 0.7480557578205461
+    }
+  },
+  {
+    "timestamp": "2026-06-06T14:17:05.754598",
+    "input_values": {
+      "fluorescence_intensity": 52.24,
+      "colorimetric_index": 0.64,
+      "spr_signal_strength": 120.54,
+      "leaf_temperature": 27.62,
+      "chlorophyll_content": 36.49,
+      "moisture_level": 30.17,
+      "light_absorption_ratio": 0.74,
+      "volatile_organic_compounds": 16.57
+    },
+    "predicted_class": "Помірний стрес",
+    "confidence": 89.65498344937257,
+    "class_probabilities": {
+      "Критичний стрес": 0.042864297543596205,
+      "Помірний стрес": 0.8965498344937257,
+      "Легкий стрес": 0.0055102941740226875,
+      "Здорова рослина": 0.05507557378865533
     }
   }
 ]

@@ -8,25 +8,17 @@
    - Виходи: 4 ймовірності для класів (softmax + temperature scaling)
    - Структура: [128 -> 64 -> 32] нейронів з ReLU
    - Training: SMOTE для балансування, class_weights для рідких класів
-   - Prediction: temperature scaling T=1.3 для реалістичних ймовірностей
+   - Prediction: сирі softmax-ймовірності моделі (без штучного згладжування)
 
 2. АНАЛІЗ ПОКАЗНИКІВ (Feature-based analysis)
-   - Порівнює кожен показник з профілем здорової рослини (± 0.5σ)
-   - Класифікує статус: "ok" (в нормі), "borderline" (на межі), "deviation" (відхилення)
-   - Рахує кількість відхилень (0-8)
-   - Це чисто описовий аналіз, не впливає на результат моделі напряму
+   - Порівнює кожен показник з профілем здорової рослини
+   - Статус: "ok", "borderline", "deviation" + вага severity
+   - Усі 8 показників впливають на класифікацію через злиття з профілями класів
 
-3. FEATURE BOOSTING (направлений)
-   - Посилює КОНКРЕТНИЙ стресовий клас, який нейромережа вже вважає провідним
-   - Вирішує два парадокси:
-     * "5 червоних прапорців, але модель каже здорова" — пригнічує p_healthy
-     * "критичний і легкий стрес мають однакову кількість прапорців" —
-       посилення йде лише туди, куди вказує модель (не рівномірно по всіх стресах)
-   - Посилення залежить від n_deviations:
-     * 0-1: довіряємо моделі повністю
-     * 2-3: буст провідного стресового класу ×1.3–1.6
-     * 4-5: буст ×1.8–2.2
-     * 6+:  буст ×2.8; якщо провідний — легкий стрес, перенаправляємо на критичний
+3. ЗЛИТТЯ ЙМОВІРНОСТЕЙ (model + features)
+   - 78% — нейромережа, 22% — відповідність профілю класу (усі 8 ознак)
+   - Червоні/жовті прапорці мають більшу вагу, зелені — меншу, але теж враховуються
+   - Попередження про конфлікти — у UI, без різкої зміни класу
 
 4. СИСТЕМА ПОПЕРЕДЖЕНЬ
    - Показує конфлікти між моделлю та показниками
@@ -40,6 +32,7 @@ NORM_MARGIN_FRAC = 0.20
 LOW_CONFIDENCE = 65.0
 CLOSE_MARGIN = 0.15
 HEALTHY_CLASS = 3
+MODEL_BLEND_WEIGHT = 0.78  # частка нейромережі; решта — усі 8 біосенсорів
 
 DEFAULT_NORMAL_RANGES = [
     (39.25, 58.65, "профіль здорової: 39–59"),
@@ -148,88 +141,121 @@ def count_clear_deviations(statuses):
     return sum(1 for s, _ in statuses if s == "deviation")
 
 
+def compute_class_profiles(df, feature_cols, target_col, n_classes=4):
+    """Середнє та σ кожного класу — для злиття з показниками."""
+    means = np.zeros((n_classes, len(feature_cols)), dtype=np.float64)
+    stds = np.zeros((n_classes, len(feature_cols)), dtype=np.float64)
+    for c in range(n_classes):
+        sub = df[df[target_col] == c][feature_cols]
+        means[c] = sub.mean().values
+        stds[c] = np.maximum(sub.std().values, 1e-6)
+    return means, stds
+
+
+def _feature_status_weight(status, severity):
+    """Вага ознаки: червоний > жовтий > зелений, але всі 8 враховуються."""
+    if status == "ok":
+        return 0.15
+    if status == "borderline":
+        return 0.45 + 0.35 * severity
+    return 0.85 + 0.15 * severity
+
+
+def compute_feature_evidence_probs(values, statuses, class_means, class_stds):
+    """
+    Ймовірності класів за відповідністю профілю.
+    Кожен з 8 показників впливає з вагою за статусом (ok/borderline/deviation).
+    """
+    vals = np.asarray(values, dtype=np.float64)
+    n_classes = class_means.shape[0]
+    log_scores = np.zeros(n_classes, dtype=np.float64)
+
+    for i, (status, severity) in enumerate(statuses):
+        w = _feature_status_weight(status, severity)
+        for c in range(n_classes):
+            z = (vals[i] - class_means[c, i]) / class_stds[c, i]
+            log_scores[c] -= w * 0.5 * (z ** 2)
+
+    log_scores -= log_scores.max()
+    exp = np.exp(log_scores)
+    return exp / exp.sum()
+
+
 def model_confidence(probs):
     p = np.asarray(probs, dtype=np.float64)
     p = p / p.sum()
     return float(p.max() * 100.0)
 
 
-def apply_feature_boosting(model_probs, n_deviations):
+def apply_feature_boosting(model_probs, n_deviations, model_cls=None):
     """
-    Направлене посилення стресового класу на основі кількості відхилень показників.
+    Корекція лише при явному конфлікті між моделлю та показниками.
+    У звичайних випадках повертає сирі ймовірності моделі без змін.
 
-    Ключова відмінність від рівномірного boosting:
-    Посилюється КОНКРЕТНИЙ стресовий клас, який нейромережа вже вважає
-    найімовірнішим — а не всі стресові класи одразу. Це усуває парадокс:
-    "легкий стрес і критичний стрес мають однакову кількість прапорців,
-    але однакове посилення" — тепер посилення йде туди, куди вказує модель.
-
-    Схема:
-    - 0-1 відхилень : довіряємо моделі повністю
-    - 2-3 відхилень : помірний буст провідного стресового класу (×1.3–1.6)
-    - 4-5 відхилень : сильний буст провідного стресового класу (×1.8–2.2)
-    - 6+  відхилень : критичний буст (×2.8); якщо провідний клас — легкий стрес,
-                      він «підвищується» до критичного (захист від недооцінки)
-    У всіх випадках p_healthy зменшується пропорційно до n_deviations.
+    Класи: 0=критичний, 1=помірний, 2=легкий, 3=здорова.
     """
     p = np.asarray(model_probs, dtype=np.float64)
     p = p / p.sum()
 
-    if n_deviations <= 1:
-        return p
+    if model_cls is None:
+        model_cls = int(np.argmax(p))
 
-    STRESS_CLASSES = [0, 1, 2]  # легкий, помірний, критичний
-
-    # Знаходимо провідний стресовий клас (той, якому модель дала найбільшу p серед стресових)
+    STRESS_CLASSES = [0, 1, 2]  # критичний, помірний, легкий
     leading_stress = max(STRESS_CLASSES, key=lambda c: p[c])
 
-    # Шкала буст-коефіцієнтів і штраф для "здорова" залежно від n_deviations
-    #   (boost_factor, healthy_penalty)
-    BOOST_TABLE = {
-        2: (1.30, 0.80),
-        3: (1.60, 0.60),
-        4: (1.80, 0.40),
-        5: (2.20, 0.20),
-    }
-    if n_deviations <= 5:
-        boost_factor, healthy_penalty = BOOST_TABLE[n_deviations]
-    else:  # 6+
-        boost_factor, healthy_penalty = 2.80, 0.10
+    # Конфлікт 1: модель каже «здорова», але багато відхилень від еталону
+    if model_cls == HEALTHY_CLASS and n_deviations >= 3:
+        boost_table = {3: 1.4, 4: 1.7, 5: 2.0}
+        boost_factor = boost_table.get(n_deviations, 2.5 if n_deviations >= 6 else 1.4)
+        healthy_penalty = max(0.10, 0.55 - 0.10 * n_deviations)
 
-    p_boosted = p.copy()
+        target_stress = leading_stress
+        # Багато відхилень + провідний легкий стрес → підозра на критичний
+        if n_deviations >= 5 and leading_stress == 2:
+            target_stress = 0
 
-    # --- Спеціальний випадок для 6+ відхилень ---
-    # Якщо провідний стресовий клас — легкий стрес (0), але відхилень дуже багато,
-    # модель, ймовірно, недооцінює серйозність. Перенаправляємо буст на критичний (2).
-    if n_deviations >= 6 and leading_stress == 0:
-        leading_stress = 2  # критичний стрес
+        p_boosted = p.copy()
+        p_boosted[target_stress] *= boost_factor
+        p_boosted[HEALTHY_CLASS] *= healthy_penalty
+        return p_boosted / p_boosted.sum()
 
-    # Посилюємо ЛИШЕ провідний стресовий клас
-    p_boosted[leading_stress] *= boost_factor
+    # Конфлікт 2: багато відхилень, модель не вважає критичним
+    if n_deviations >= 6 and model_cls != 0:
+        p_boosted = p.copy()
+        if leading_stress == 2:
+            p_boosted[0] *= 1.4
+        else:
+            p_boosted[leading_stress] *= 1.25
+        return p_boosted / p_boosted.sum()
 
-    # Знижуємо "здорова"
-    p_boosted[HEALTHY_CLASS] *= healthy_penalty
-
-    # Нормалізація — сума = 1
-    p_boosted = p_boosted / p_boosted.sum()
-
-    return p_boosted
+    return p
 
 
-def classify(values, model_probs, normal_ranges):
+def classify(values, model_probs, normal_ranges, class_means=None, class_stds=None,
+             model_weight=MODEL_BLEND_WEIGHT):
     statuses = analyze_features(values, normal_ranges)
     n_dev = count_clear_deviations(statuses)
-    
-    # Застосовуємо boosting на основі кількості девіацій
-    p = apply_feature_boosting(model_probs, n_dev)
-    
+
+    p_model = np.asarray(model_probs, dtype=np.float64)
+    p_model = p_model / p_model.sum()
+    model_cls = int(np.argmax(p_model))
+
+    if class_means is not None and class_stds is not None:
+        p_feat = compute_feature_evidence_probs(values, statuses, class_means, class_stds)
+        p = model_weight * p_model + (1.0 - model_weight) * p_feat
+        p = p / p.sum()
+    else:
+        p = p_model.copy()
+
     final_cls = int(np.argmax(p))
     return {
         "final_probs": p,
         "final_cls": final_cls,
         "confidence": model_confidence(p),
         "statuses": statuses,
-        "n_deviations": n_dev,  # Для аналізу
+        "n_deviations": n_dev,
+        "model_cls": model_cls,
+        "feature_influence": 1.0 - model_weight if class_means is not None else 0.0,
     }
 
 
@@ -259,16 +285,18 @@ def prediction_caution(res, statuses, class_names):
             f"проти «{class_names[second_cls]}» ({second_p * 100:.0f}%)."
         )
     
+    model_cls = res.get("model_cls", final_cls)
+
     # Попередження про конфлікти між моделлю та показниками
-    if n_dev >= 4 and final_cls == HEALTHY_CLASS:
+    if n_dev >= 4 and model_cls == HEALTHY_CLASS and final_cls == HEALTHY_CLASS:
         lines.append(
             f"⚠ КОНФЛІКТ: {n_dev} показників сильно відхиляються, "
             f"але модель передбачає здорову рослину. Слід розглянути як легкий стрес."
         )
-    elif n_dev >= 6 and final_cls != 2:  # Не критичний стрес
+    elif n_dev >= 6 and final_cls != 0:  # Не критичний стрес (клас 0)
         lines.append(
-            f"⚠ КОНФЛІКТ: {n_dev}/8 показників вказують на критичний стрес, "
-            f"але модель обережна. Посилено критичність."
+            f"⚠ КОНФЛІКТ: {n_dev}/8 показників сильно відхиляються, "
+            f"але модель не вказує на критичний стрес."
         )
     elif n_dev == 0 and final_cls != HEALTHY_CLASS:
         lines.append(

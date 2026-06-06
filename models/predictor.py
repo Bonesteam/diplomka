@@ -1,28 +1,27 @@
 """Модуль для передбачення та завантаження моделей."""
-import numpy as np, tensorflow as tf
+import numpy as np
+import tensorflow as tf
+
 
 def predict(model, X):
     """
     Робить передбачення на вхідних даних.
-    
-    Args:
-        model: Keras модель
-        X: Вхідні дані форми (n_samples, n_features)
-    
+
     Returns:
         tuple: (передбачені класи, ймовірності для всіх класів)
     """
     probs = model.predict(X, verbose=0)
     return np.argmax(probs, axis=1), probs
 
+
+def get_probabilities(model, X_scaled):
+    """Сирі ймовірності моделі (без штучного згладжування)."""
+    probs = model.predict(X_scaled, verbose=0)
+    if probs.ndim == 1:
+        probs = probs.reshape(1, -1)
+    return np.asarray(probs, dtype=np.float64)
+
+
 def load_model(path):
-    """
-    Завантажує збережену Keras модель з файлу.
-    
-    Args:
-        path (str): Шлях до файлу моделі (.keras формат)
-    
-    Returns:
-        keras.Model: Завантажена модель
-    """
+    """Завантажує збережену Keras модель з файлу."""
     return tf.keras.models.load_model(path)
