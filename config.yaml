@@ -1,8 +1,6 @@
 data:
-  path: data/plant_health_biosensor_15k.csv
+  path: plant_health_biosensor_dataset.csv
   random_state: 42
-  test_path: plant_health_biosensor_dataset.csv
-  test_size: 0.2
   val_size: 0.2
 model:
   activation: relu
@@ -20,7 +18,7 @@ preprocessing:
   scaler: standard
 training:
   batch_size: 32
-  epochs: 100
-  learning_rate: 0.0008
-  patience: 15
-  reduce_patience: 7
+  epochs: 50
+  learning_rate: 0.001
+  patience: 7
+  reduce_patience: 5

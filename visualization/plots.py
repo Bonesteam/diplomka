@@ -47,3 +47,46 @@ def plot_comparison_bar(metrics_nn, baseline_results, save_path="results/compari
         ax.text(i+w/2, f+0.01, f"{f:.3f}", ha="center", fontsize=8)
     plt.tight_layout(); plt.savefig(save_path, dpi=150, bbox_inches="tight"); plt.close()
     print(f"Збережено: {save_path}")
+
+def plot_smote_comparison(y_before, y_after, save_path="results/smote_comparison.png"):
+    """Порівняння розподілу класів до та після SMOTE."""
+    from preprocessing.loader import CLASS_NAMES
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    
+    unique_classes = sorted(set(y_before.tolist()))
+    labels = [CLASS_NAMES[i] for i in unique_classes]
+    counts_before = [np.sum(y_before == i) for i in unique_classes]
+    counts_after = [np.sum(y_after == i) for i in unique_classes]
+    
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    colors = sns.color_palette("husl", len(labels))
+    
+    # До SMOTE
+    bars1 = axes[0].bar(labels, counts_before, color=colors, edgecolor="white", linewidth=0.8)
+    axes[0].set_title("До SMOTE", fontsize=12, fontweight="bold")
+    axes[0].set_ylabel("Кількість зразків")
+    axes[0].tick_params(axis='x', rotation=20)
+    for bar, cnt in zip(bars1, counts_before):
+        axes[0].text(bar.get_x()+bar.get_width()/2, bar.get_height()+20, str(cnt), 
+                     ha="center", va="bottom", fontsize=10)
+    axes[0].grid(axis="y", alpha=0.3)
+    
+    # Після SMOTE
+    bars2 = axes[1].bar(labels, counts_after, color=colors, edgecolor="white", linewidth=0.8)
+    axes[1].set_title("Після SMOTE", fontsize=12, fontweight="bold")
+    axes[1].set_ylabel("Кількість зразків")
+    axes[1].tick_params(axis='x', rotation=20)
+    for bar, cnt in zip(bars2, counts_after):
+        axes[1].text(bar.get_x()+bar.get_width()/2, bar.get_height()+20, str(cnt), 
+                     ha="center", va="bottom", fontsize=10)
+    axes[1].grid(axis="y", alpha=0.3)
+    
+    # Вирівняємо масштаб осей Y
+    max_val = max(max(counts_before), max(counts_after))
+    axes[0].set_ylim(0, max_val * 1.15)
+    axes[1].set_ylim(0, max_val * 1.15)
+    
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"Збережено: {save_path}")

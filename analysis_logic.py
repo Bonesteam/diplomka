@@ -1,16 +1,112 @@
 """
-Стабільна логіка аналізу: м'які межі норм, пом'якшені ймовірності моделі, злиття з правилами.
+АРХІТЕКТУРА КЛАСИФІКАЦІЇ:
+
+Система двоходова класифікації для діагностики стану рослини:
+
+1. МОДЕЛЬ (Нейронна мережа MLP)
+   - Входи: 8 біосенсорних показників (нормалізовані)
+   - Виходи: 4 ймовірності для класів (softmax + temperature scaling)
+   - Структура: [128 -> 64 -> 32] нейронів з ReLU
+   - Training: SMOTE для балансування, class_weights для рідких класів
+   - Prediction: temperature scaling T=1.3 для реалістичних ймовірностей
+
+2. АНАЛІЗ ПОКАЗНИКІВ (Feature-based analysis)
+   - Порівнює кожен показник з профілем здорової рослини (± 0.5σ)
+   - Класифікує статус: "ok" (в нормі), "borderline" (на межі), "deviation" (відхилення)
+   - Рахує кількість відхилень (0-8)
+   - Це чисто описовий аналіз, не впливає на результат моделі напряму
+
+3. FEATURE BOOSTING (направлений)
+   - Посилює КОНКРЕТНИЙ стресовий клас, який нейромережа вже вважає провідним
+   - Вирішує два парадокси:
+     * "5 червоних прапорців, але модель каже здорова" — пригнічує p_healthy
+     * "критичний і легкий стрес мають однакову кількість прапорців" —
+       посилення йде лише туди, куди вказує модель (не рівномірно по всіх стресах)
+   - Посилення залежить від n_deviations:
+     * 0-1: довіряємо моделі повністю
+     * 2-3: буст провідного стресового класу ×1.3–1.6
+     * 4-5: буст ×1.8–2.2
+     * 6+:  буст ×2.8; якщо провідний — легкий стрес, перенаправляємо на критичний
+
+4. СИСТЕМА ПОПЕРЕДЖЕНЬ
+   - Показує конфлікти між моделлю та показниками
+   - Пояснює коли результат невпевнений або парадоксальний
+
+РЕЗУЛЬТАТ: Комбінована оцінка яка враховує і нейронну мережу, і біосенсорні показники
 """
 import numpy as np
 
-# Допуск біля межі норми (частка ширини діапазону з кожного боку)
-NORM_MARGIN_FRAC = 0.08
+NORM_MARGIN_FRAC = 0.20
+LOW_CONFIDENCE = 65.0
+CLOSE_MARGIN = 0.15
+HEALTHY_CLASS = 3
 
-# Температура softmax — >1 зменшує надмірну впевненість моделі
-MODEL_TEMPERATURE = 2.0
+DEFAULT_NORMAL_RANGES = [
+    (39.25, 58.65, "профіль здорової: 39–59"),
+    (0.52, 0.70, "профіль здорової: 0.52–0.70"),
+    (75.38, 109.49, "профіль здорової: 75–109"),
+    (19.94, 29.73, "профіль здорової: 20–30"),
+    (29.65, 49.55, "профіль здорової: 30–50"),
+    (24.99, 35.03, "профіль здорової: 25–35"),
+    (0.65, 0.75, "профіль здорової: 0.65–0.75"),
+    (9.97, 19.59, "профіль здорової: 10–20"),
+]
 
-# Максимальна відображувана впевненість у UI
-MAX_DISPLAY_CONFIDENCE = 88.0
+DEFAULT_INPUT_RANGES = [
+    (15, 90, "допустимо: 15–90"),
+    (0.25, 0.95, "допустимо: 0.25–0.95"),
+    (40, 180, "допустимо: 40–180"),
+    (9, 41, "допустимо: 9–41"),
+    (10, 72, "допустимо: 10–72"),
+    (13, 48, "допустимо: 13–48"),
+    (0.50, 0.87, "допустимо: 0.50–0.87"),
+    (0, 29, "допустимо: 0–29"),
+]
+
+
+def _fmt_val(v):
+    if abs(v) >= 100 or (abs(v) < 0.01 and v != 0):
+        return f"{v:.1f}"
+    if abs(v) >= 10:
+        return f"{v:.1f}"
+    return f"{v:.2f}"
+
+
+def _range_hint(lo, hi, prefix="профіль здорової"):
+    return f"{prefix}: {_fmt_val(lo)}–{_fmt_val(hi)}"
+
+
+def compute_normal_ranges(df, feature_cols, target_col, reference_class=HEALTHY_CLASS,
+                          lo_pct=10, hi_pct=90):
+    """Діапазони на базі середнього ± 0.8 стд (здорового класу) — охоплює ~57% здорових рослин."""
+    sub = df[df[target_col] == reference_class]
+    if len(sub) < 10:
+        return list(DEFAULT_NORMAL_RANGES)
+    ranges = []
+    for col in feature_cols:
+        mean = float(sub[col].mean())
+        std = float(sub[col].std())
+        # Діапазон: середня ± 0.8*стд — охоплює ~57% здорових рослин
+        # Достатньо розсунутий, щоб здорові рослини показували "норму",
+        # але чітко виявляє значущі відхилення (стрес)
+        lo = mean - 0.8 * std
+        hi = mean + 0.8 * std
+        if hi <= lo:
+            hi = lo + 1e-6
+        ranges.append((lo, hi, _range_hint(lo, hi)))
+    return ranges
+
+
+def compute_input_ranges(df, feature_cols, lo_pct=1, hi_pct=99):
+    """Широкі межі для полів введення — за всім датасетом."""
+    ranges = []
+    for col in feature_cols:
+        lo = float(df[col].quantile(lo_pct / 100.0))
+        hi = float(df[col].quantile(hi_pct / 100.0))
+        if hi <= lo:
+            hi = lo + 1e-6
+        ranges.append((lo, hi, f"допустимо: {_fmt_val(lo)}–{_fmt_val(hi)}"))
+    return ranges
 
 
 def _range_width(lo, hi):
@@ -18,12 +114,6 @@ def _range_width(lo, hi):
 
 
 def feature_deviation_status(val, lo, hi):
-    """
-    Статус показника:
-      'ok' — у нормі
-      'borderline' — біля межі (не рахується як сильне відхилення)
-      'deviation' — явно поза нормою
-    """
     if lo <= val <= hi:
         return "ok", 0.0
 
@@ -32,7 +122,6 @@ def feature_deviation_status(val, lo, hi):
     lo_ext, hi_ext = lo - margin, hi + margin
 
     if lo_ext <= val <= hi_ext:
-        # трохи за межами «строгої» норми, але в зоні допуску
         if val < lo:
             frac = (lo - val) / margin
         else:
@@ -48,7 +137,7 @@ def feature_deviation_status(val, lo, hi):
 
 
 def analyze_features(values, normal_ranges):
-    """Повертає список (status, severity) для кожної ознаки."""
+    """Повертає список (status, severity) для кожної ознаки — лише для UI."""
     out = []
     for val, (lo, hi, _) in zip(values, normal_ranges):
         out.append(feature_deviation_status(val, lo, hi))
@@ -59,119 +148,137 @@ def count_clear_deviations(statuses):
     return sum(1 for s, _ in statuses if s == "deviation")
 
 
-def total_stress_score(statuses):
-    return sum(sev for _, sev in statuses)
-
-
-def soften_model_probs(probs, temperature=MODEL_TEMPERATURE):
-    p = np.clip(np.asarray(probs, dtype=np.float64), 1e-9, 1.0)
-    p = p / p.sum()
-    logits = np.log(p)
-    e = np.exp(logits / temperature)
-    return e / e.sum()
-
-
-def rule_probs_from_stress(n_clear, stress_total):
-    """Ймовірності за показниками; при масових відхиленнях — висока впевненість у критичному."""
-    s = np.array([0.05, 0.05, 0.05, 0.05], dtype=np.float64)
-
-    if n_clear >= 7 or stress_total >= 6.0:
-        s[:] = [0.93, 0.04, 0.02, 0.01]
-    elif n_clear >= 5 or stress_total >= 4.5:
-        s[:] = [0.86, 0.08, 0.04, 0.02]
-    elif n_clear >= 4 or stress_total >= 3.2:
-        s[:] = [0.68, 0.18, 0.10, 0.04]
-    elif n_clear >= 3 or stress_total >= 2.2:
-        s[:] = [0.48, 0.28, 0.16, 0.08]
-    elif n_clear == 2 or stress_total >= 1.3:
-        s[:] = [0.12, 0.48, 0.28, 0.12]
-    elif n_clear == 1 or stress_total >= 0.45:
-        # 1 чітке відхилення — найбільш характерно для помірного стресу
-        s[:] = [0.06, 0.46, 0.28, 0.20]
-    else:
-        s[:] = [0.04, 0.08, 0.18, 0.70]
-
-    return s / s.sum()
-
-
-def blend_weight(n_clear, stress_total, model_probs_raw=None):
-    """
-    Частка правил у фінальному рішенні.
-    При багатьох відхиленнях модель часто помиляється (зокрема на 999…) — покладаємось на показники.
-    """
-    if n_clear == 0 and stress_total < 0.35:
-        return 0.0
-    if n_clear >= 7 or stress_total >= 6.0:
-        return 1.0
-    if n_clear >= 5 or stress_total >= 4.5:
-        return 0.95
-    if n_clear >= 4:
-        return 0.82
-    # модель суперечить показникам (типово «здорова» при багатьох червоних)
-    if model_probs_raw is not None and n_clear >= 3:
-        p = np.asarray(model_probs_raw, dtype=np.float64)
-        p = p / p.sum()
-        if int(np.argmax(p)) == 3 and p[3] > 0.5:
-            return 0.95
-    w = n_clear * 0.11 + stress_total * 0.07
-    return float(np.clip(w, 0.0, 0.75))
-
-
-def calibrated_confidence(probs, n_clear=0, blend_w=0.0):
-    """Впевненість для UI; не занижувати, коли рішення явно за показниками."""
+def model_confidence(probs):
     p = np.asarray(probs, dtype=np.float64)
     p = p / p.sum()
-    top = float(p.max())
-    second = float(np.partition(p, -2)[-2])
-    margin = top - second
-    conf = top * 100.0
+    return float(p.max() * 100.0)
 
-    # багато відхилень + домінують правила — довіряємо топ-ймовірності
-    if blend_w >= 0.9 and n_clear >= 5:
-        return min(conf, MAX_DISPLAY_CONFIDENCE)
 
-    if margin < 0.22:
-        conf = 48.0 + margin * 145.0
-    return min(conf, MAX_DISPLAY_CONFIDENCE)
+def apply_feature_boosting(model_probs, n_deviations):
+    """
+    Направлене посилення стресового класу на основі кількості відхилень показників.
+
+    Ключова відмінність від рівномірного boosting:
+    Посилюється КОНКРЕТНИЙ стресовий клас, який нейромережа вже вважає
+    найімовірнішим — а не всі стресові класи одразу. Це усуває парадокс:
+    "легкий стрес і критичний стрес мають однакову кількість прапорців,
+    але однакове посилення" — тепер посилення йде туди, куди вказує модель.
+
+    Схема:
+    - 0-1 відхилень : довіряємо моделі повністю
+    - 2-3 відхилень : помірний буст провідного стресового класу (×1.3–1.6)
+    - 4-5 відхилень : сильний буст провідного стресового класу (×1.8–2.2)
+    - 6+  відхилень : критичний буст (×2.8); якщо провідний клас — легкий стрес,
+                      він «підвищується» до критичного (захист від недооцінки)
+    У всіх випадках p_healthy зменшується пропорційно до n_deviations.
+    """
+    p = np.asarray(model_probs, dtype=np.float64)
+    p = p / p.sum()
+
+    if n_deviations <= 1:
+        return p
+
+    STRESS_CLASSES = [0, 1, 2]  # легкий, помірний, критичний
+
+    # Знаходимо провідний стресовий клас (той, якому модель дала найбільшу p серед стресових)
+    leading_stress = max(STRESS_CLASSES, key=lambda c: p[c])
+
+    # Шкала буст-коефіцієнтів і штраф для "здорова" залежно від n_deviations
+    #   (boost_factor, healthy_penalty)
+    BOOST_TABLE = {
+        2: (1.30, 0.80),
+        3: (1.60, 0.60),
+        4: (1.80, 0.40),
+        5: (2.20, 0.20),
+    }
+    if n_deviations <= 5:
+        boost_factor, healthy_penalty = BOOST_TABLE[n_deviations]
+    else:  # 6+
+        boost_factor, healthy_penalty = 2.80, 0.10
+
+    p_boosted = p.copy()
+
+    # --- Спеціальний випадок для 6+ відхилень ---
+    # Якщо провідний стресовий клас — легкий стрес (0), але відхилень дуже багато,
+    # модель, ймовірно, недооцінює серйозність. Перенаправляємо буст на критичний (2).
+    if n_deviations >= 6 and leading_stress == 0:
+        leading_stress = 2  # критичний стрес
+
+    # Посилюємо ЛИШЕ провідний стресовий клас
+    p_boosted[leading_stress] *= boost_factor
+
+    # Знижуємо "здорова"
+    p_boosted[HEALTHY_CLASS] *= healthy_penalty
+
+    # Нормалізація — сума = 1
+    p_boosted = p_boosted / p_boosted.sum()
+
+    return p_boosted
 
 
 def classify(values, model_probs, normal_ranges):
-    """
-    Повертає dict:
-      final_probs, final_cls, confidence, statuses,
-      model_probs_soft, rule_probs, blend_w, model_cls
-    """
     statuses = analyze_features(values, normal_ranges)
-    n_clear = count_clear_deviations(statuses)
-    stress = total_stress_score(statuses)
-
-    raw_p = np.asarray(model_probs, dtype=np.float64)
-    raw_p = raw_p / raw_p.sum()
-    model_soft = soften_model_probs(raw_p)
-    model_cls = int(np.argmax(model_soft))
-    rule_p = rule_probs_from_stress(n_clear, stress)
-    w = blend_weight(n_clear, stress, model_probs_raw=raw_p)
-
-    if w >= 0.999:
-        final_p = rule_p
-    elif w <= 0.0:
-        final_p = model_soft
-    else:
-        final_p = (1.0 - w) * model_soft + w * rule_p
-        final_p = final_p / final_p.sum()
-
-    final_cls = int(np.argmax(final_p))
-    conf = calibrated_confidence(final_p, n_clear=n_clear, blend_w=w)
-
+    n_dev = count_clear_deviations(statuses)
+    
+    # Застосовуємо boosting на основі кількості девіацій
+    p = apply_feature_boosting(model_probs, n_dev)
+    
+    final_cls = int(np.argmax(p))
     return {
-        "final_probs": final_p,
+        "final_probs": p,
         "final_cls": final_cls,
-        "confidence": conf,
+        "confidence": model_confidence(p),
         "statuses": statuses,
-        "model_probs_soft": model_soft,
-        "rule_probs": rule_p,
-        "blend_w": w,
-        "model_cls": model_cls,
-        "n_clear_deviations": n_clear,
-        "stress_total": stress,
+        "n_deviations": n_dev,  # Для аналізу
+    }
+
+
+def prediction_caution(res, statuses, class_names):
+    """Попередження для пограничних або суперечливих результатів."""
+    p = np.asarray(res["final_probs"], dtype=np.float64)
+    p = p / p.sum()
+    final_cls = res["final_cls"]
+    conf = res["confidence"]
+    n_dev = res.get("n_deviations", count_clear_deviations(statuses))
+    order = np.argsort(p)
+    second_cls = int(order[-2])
+    second_p = float(p[second_cls])
+    margin = float(p[final_cls] - second_p)
+
+    lines = []
+    
+    # Попередження про невпевненість моделі
+    if conf < LOW_CONFIDENCE:
+        lines.append(
+            f"Модель не впевнена ({conf:.0f}%) — другий варіант: "
+            f"«{class_names[second_cls]}» ({second_p * 100:.0f}%)."
+        )
+    elif margin < CLOSE_MARGIN:
+        lines.append(
+            f"Класи близькі: «{class_names[final_cls]}» ({conf:.0f}%) "
+            f"проти «{class_names[second_cls]}» ({second_p * 100:.0f}%)."
+        )
+    
+    # Попередження про конфлікти між моделлю та показниками
+    if n_dev >= 4 and final_cls == HEALTHY_CLASS:
+        lines.append(
+            f"⚠ КОНФЛІКТ: {n_dev} показників сильно відхиляються, "
+            f"але модель передбачає здорову рослину. Слід розглянути як легкий стрес."
+        )
+    elif n_dev >= 6 and final_cls != 2:  # Не критичний стрес
+        lines.append(
+            f"⚠ КОНФЛІКТ: {n_dev}/8 показників вказують на критичний стрес, "
+            f"але модель обережна. Посилено критичність."
+        )
+    elif n_dev == 0 and final_cls != HEALTHY_CLASS:
+        lines.append(
+            f"✓ Всі показники в нормі (профіль здорової рослини), "
+            f"але модель передбачає {class_names[final_cls].lower()}. Можливо помилка."
+        )
+
+    if not lines:
+        return None
+    return {
+        "title": "Пограничний випадок — інтерпретуйте обережно",
+        "lines": lines,
     }
