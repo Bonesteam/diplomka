@@ -1,4 +1,4 @@
-import os, sys, threading, numpy as np, json, datetime
+import os, threading, numpy as np, json, datetime
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from tkinter.scrolledtext import ScrolledText
@@ -16,15 +16,7 @@ CLASS_NAMES  = ["Критичний стрес","Помірний стрес","�
 CLASS_COLORS = ["#E24B4A","#EF9F27","#639922","#1D9E75"]
 CLASS_BG     = ["#FCEBEB","#FAEEDA","#EAF3DE","#E1F5EE"]
 
-# Резервні пресети — реальні зразки з датасету, що найкраще представляють кожен клас.
-# Відібрані як найбільш типові (мінімальна відстань до центроїду класу)
-# і максимально контрастні відносно інших класів.
-#
-# Клас 0 — Критичний стрес: висока флуоресценція (>60), хлорофіл >50 (парадоксально
-#   підвищений через стресову реакцію), SPR ~100
-# Клас 1 — Помірний стрес: SPR значно підвищений (>120), хлорофіл знижений (<37)
-# Клас 2 — Легкий стрес: низький колориметр (<0.52), низька вологість (<22), знижений SPR
-# Клас 3 — Здорова рослина: збалансовані показники, всі в нормальних діапазонах
+# Резервні пресети, якщо датасет недоступний при старті
 FALLBACK_PRESETS = {
     "Критичний стрес": [61.49, 0.64, 104.49, 24.08, 57.07, 32.04, 0.71, 13.23],
     "Помірний стрес":  [52.24, 0.64, 120.54, 27.62, 36.49, 30.17, 0.74, 16.57],
@@ -37,7 +29,7 @@ WARN_BG="#FAEEDA"; WARN_FG="#854F0B"
 
 from analysis_logic import (
     classify, prediction_caution,
-    compute_normal_ranges, compute_input_ranges,
+    compute_normal_ranges, compute_input_ranges, compute_class_profiles,
     DEFAULT_NORMAL_RANGES, DEFAULT_INPUT_RANGES,
 )
 
@@ -75,11 +67,8 @@ class PlantHealthApp(tk.Tk):
             df = pd.read_csv(path)
             self.normal_ranges = compute_normal_ranges(df, FEATURE_COLS, TARGET_COL)
             self.feature_ranges = compute_input_ranges(df, FEATURE_COLS)
-            grp = df.groupby(TARGET_COL)[FEATURE_COLS]
-            means = grp.mean()
-            stds = grp.std().replace(0, 1e-6)
-            self.class_means = means.values
-            self.class_stds = stds.values
+            self.class_means, self.class_stds = compute_class_profiles(df, FEATURE_COLS, TARGET_COL)
+            means = df.groupby(TARGET_COL)[FEATURE_COLS].mean()
             presets = {}
             for i, name in enumerate(CLASS_NAMES):
                 sub = df[df[TARGET_COL] == i][FEATURE_COLS]
@@ -124,98 +113,164 @@ class PlantHealthApp(tk.Tk):
         self._build_batch_tab()
         self._build_info_tab()
 
+    def _load_report_metrics(self):
+        """Метрики з останнього навчання (results/report.json)."""
+        try:
+            if os.path.exists("results/report.json"):
+                with open("results/report.json", encoding="utf-8") as f:
+                    report = json.load(f)
+                nn = report.get("neural_network", {})
+                return {
+                    "accuracy": nn.get("accuracy"),
+                    "f1": nn.get("f1_weighted"),
+                    "roc_auc": nn.get("roc_auc"),
+                }
+        except Exception:
+            pass
+        return {}
+
+    def _load_config_snapshot(self):
+        import yaml
+        if not os.path.exists("config.yaml"):
+            return {}
+        try:
+            with open("config.yaml", encoding="utf-8") as f:
+                return yaml.safe_load(f) or {}
+        except Exception:
+            return {}
+
+    def _refresh_info_tab(self):
+        for w in self.tab_info.winfo_children():
+            w.destroy()
+        self._build_info_tab()
+
     # ==================== СТОРІНКА ДОВІДКА ====================
     def _build_info_tab(self):
         info = tk.Frame(self.tab_info, bg=BG)
         info.pack(fill="both", expand=True, padx=16, pady=12)
-        
-        # Заголовок
-        tk.Label(info, text="📊 Про систему", bg=BG, fg=ACCENT, 
+
+        cfg = self._load_config_snapshot()
+        metrics = self._load_report_metrics()
+        dataset_path = cfg.get("data", {}).get("path", DATA_PATH)
+        val_split = cfg.get("training", {}).get("validation_split", 0.2)
+        lr = cfg.get("training", {}).get("learning_rate", 0.001)
+        dropout = cfg.get("model", {}).get("dropout", 0.3)
+
+        tk.Label(info, text="📊 Про систему", bg=BG, fg=ACCENT,
                  font=("Segoe UI", 16, "bold")).pack(anchor="w", pady=(0, 10))
-        
-        # Опис
-        desc = tk.Label(info, text="Система оцінює стан здоров'я рослин на основі 8 біосенсорних показників. "
-                        "Використовується нейронна мережа MLP з точністю ~76%.", 
-                        bg=BG, fg=TEXT, font=("Segoe UI", 11), wraplength=750, justify="left")
-        desc.pack(anchor="w", pady=(0, 15))
-        
-        # Таблиця ознак
-        tk.Label(info, text="🔬 Біосенсорні показники", bg=BG, fg=ACCENT, 
+
+        if metrics.get("accuracy") is not None:
+            desc_txt = (
+                f"Система класифікує стан рослини за 8 біосенсорними показниками "
+                f"(MLP + профіль ознак). Останнє навчання: test accuracy "
+                f"{metrics['accuracy']*100:.1f}%, ROC-AUC {metrics.get('roc_auc', 0):.3f}."
+            )
+        else:
+            desc_txt = (
+                "Система класифікує стан рослини за 8 біосенсорними показниками. "
+                "Спочатку навчіть модель на вкладці «Навчання моделі»."
+            )
+        tk.Label(info, text=desc_txt, bg=BG, fg=TEXT, font=("Segoe UI", 11),
+                 wraplength=750, justify="left").pack(anchor="w", pady=(0, 8))
+        tk.Label(info, text=f"Датасет: {dataset_path}", bg=BG, fg=MUTED,
+                 font=("Segoe UI", 9)).pack(anchor="w", pady=(0, 12))
+
+        tk.Label(info, text="🔬 Біосенсорні показники", bg=BG, fg=ACCENT,
                  font=("Segoe UI", 13, "bold")).pack(anchor="w", pady=(0, 8))
-        
-        # Рамка з таблицею
-        table_frame = tk.Frame(info, bg=CARD, relief="flat", bd=1, highlightbackground=BORDER, highlightthickness=1)
+
+        table_frame = tk.Frame(info, bg=CARD, relief="flat", bd=1,
+                               highlightbackground=BORDER, highlightthickness=1)
         table_frame.pack(fill="x", pady=(0, 15))
-        
-        cols = ("Ознака", "Нормальний діапазон", "Одиниці вимірювання")
-        for i, col in enumerate(cols):
-            lbl = tk.Label(table_frame, text=col, bg=ACCENT, fg="white", font=("Segoe UI", 10, "bold"),
-                           padx=10, pady=6)
-            lbl.grid(row=0, column=i, sticky="ew")
-        
-        data = [
-            ("Флуоресценція", "39–59", "відносні од."),
-            ("Колориметричний індекс", "0.52–0.70", "одиниці"),
-            ("SPR-сигнал", "75–109", "нм"),
-            ("Температура листа", "20–30", "°C"),
-            ("Вміст хлорофілу", "30–50", "мг/г"),
-            ("Рівень вологості", "25–35", "%"),
-            ("Поглинання світла", "0.65–0.75", "коеф."),
-            ("Леткі сполуки (VOC)", "10–20", "ppm")
-        ]
-        
-        for i, row_data in enumerate(data):
-            for j, val in enumerate(row_data):
-                bg_color = "#F8F9FA" if i % 2 == 0 else "#FFFFFF"
-                lbl = tk.Label(table_frame, text=val, bg=bg_color, fg=TEXT, font=("Segoe UI", 10),
-                               padx=10, pady=4)
-                lbl.grid(row=i+1, column=j, sticky="ew")
-        
-        for j in range(3):
+
+        headers = ("Ознака", "Колонка CSV", "Профіль здорової", "Допустимо для вводу")
+        for j, col in enumerate(headers):
+            tk.Label(table_frame, text=col, bg=ACCENT, fg="white",
+                     font=("Segoe UI", 10, "bold"), padx=8, pady=6).grid(row=0, column=j, sticky="ew")
+
+        for i, (ua, col_name) in enumerate(zip(FEATURE_UA, FEATURE_COLS)):
+            _, _, normal_hint = self.normal_ranges[i]
+            _, _, input_hint = self.feature_ranges[i]
+            bg_color = "#F8F9FA" if i % 2 == 0 else "#FFFFFF"
+            row_vals = (ua, col_name, normal_hint, input_hint)
+            for j, val in enumerate(row_vals):
+                tk.Label(table_frame, text=val, bg=bg_color, fg=TEXT,
+                         font=("Segoe UI", 9), padx=8, pady=4, anchor="w",
+                         wraplength=180 if j == 0 else 220).grid(row=i + 1, column=j, sticky="ew")
+
+        for j in range(len(headers)):
             table_frame.columnconfigure(j, weight=1)
-        
-        # Про модель
-        tk.Label(info, text="🧠 Про нейронну мережу", bg=BG, fg=ACCENT, 
+
+        tk.Label(info, text="Профіль здорової — середнє ± 0.8σ для класу «Здорова рослина». "
+                 "Допустимо — 1–99 перцентиль датасету (як на формі вводу).",
+                 bg=BG, fg=MUTED, font=("Segoe UI", 8), wraplength=750,
+                 justify="left").pack(anchor="w", pady=(0, 12))
+
+        tk.Label(info, text="🧠 Про нейронну мережу", bg=BG, fg=ACCENT,
                  font=("Segoe UI", 13, "bold")).pack(anchor="w", pady=(0, 8))
-        
-        model_frame = tk.Frame(info, bg=CARD, relief="flat", bd=1, highlightbackground=BORDER, highlightthickness=1)
+
+        model_frame = tk.Frame(info, bg=CARD, relief="flat", bd=1,
+                               highlightbackground=BORDER, highlightthickness=1)
         model_frame.pack(fill="x", pady=(0, 15))
-        
+
+        acc_line = (
+            f"• Test accuracy (останнє навчання): {metrics['accuracy']*100:.1f}%"
+            if metrics.get("accuracy") is not None else
+            "• Test accuracy: навчіть модель для оцінки"
+        )
+        auc_line = (
+            f"• ROC-AUC (зважений): {metrics['roc_auc']:.3f}"
+            if metrics.get("roc_auc") is not None else
+            "• ROC-AUC: —"
+        )
         model_info = [
-            "• Архітектура: MLP (багатошарова нейронна мережа)",
-            "• Розмір шарів: 128 → 64 → 32 нейрони",
-            "• Функція активації: ReLU",
-            "• Регуляризація: Dropout 0.3, BatchNormalization",
-            "• Оптимізатор: Adam (learning rate = 0.001)",
+            "• Архітектура: MLP (128 → 64 → 32 нейрони)",
+            "• Активація: ReLU  |  Dropout + BatchNormalization",
+            f"• Оптимізатор: Adam (learning rate = {lr})",
+            f"• Dropout: {dropout}",
             "• Функція втрат: sparse_categorical_crossentropy",
-            "• Точність моделі на датасеті: ~92%",
-            "• ROC-AUC (зважений): ~0.98"
+            acc_line,
+            auc_line,
         ]
-        
-        for i, line in enumerate(model_info):
+        for line in model_info:
             tk.Label(model_frame, text=line, bg=CARD, fg=TEXT, font=("Segoe UI", 10),
                      anchor="w", padx=12, pady=3).pack(fill="x")
-        
-        # Інструкція
-        tk.Label(info, text="📖 Як користуватися", bg=BG, fg=ACCENT, 
+
+        tk.Label(info, text="📁 Розбиття датасету", bg=BG, fg=ACCENT,
                  font=("Segoe UI", 13, "bold")).pack(anchor="w", pady=(0, 8))
-        
-        inst_frame = tk.Frame(info, bg=CARD, relief="flat", bd=1, highlightbackground=BORDER, highlightthickness=1)
-        inst_frame.pack(fill="x")
-        
-        instructions = [
-            "1. Введіть або завантажте показники біосенсорів на вкладці «Аналіз рослини»",
-            "2. Натисніть «Аналізувати» для отримання результату",
-            "3. Система покаже ймовірний стан рослини та впевненість",
-            "4. Всі аналізи зберігаються в «Історія аналізів»",
-            "5. Для масового аналізу використовуйте «Пакетний аналіз CSV»"
+
+        split_frame = tk.Frame(info, bg=CARD, relief="flat", bd=1,
+                               highlightbackground=BORDER, highlightthickness=1)
+        split_frame.pack(fill="x", pady=(0, 15))
+
+        split_lines = [
+            "• Один CSV → sklearn train_test_split",
+            "• Train: 80%  |  Test: 20% (ізольований, фінальна оцінка)",
+            f"• Val на графіках: Keras validation_split={val_split} (автоматично з train)",
+            "• Окремого validation-файлу немає",
+            "• SMOTE застосовується лише до train (якщо увімкнено)",
         ]
-        
-        for i, line in enumerate(instructions):
+        for line in split_lines:
+            tk.Label(split_frame, text=line, bg=CARD, fg=TEXT, font=("Segoe UI", 10),
+                     anchor="w", padx=12, pady=3).pack(fill="x")
+
+        tk.Label(info, text="📖 Як користуватися", bg=BG, fg=ACCENT,
+                 font=("Segoe UI", 13, "bold")).pack(anchor="w", pady=(0, 8))
+
+        inst_frame = tk.Frame(info, bg=CARD, relief="flat", bd=1,
+                              highlightbackground=BORDER, highlightthickness=1)
+        inst_frame.pack(fill="x")
+
+        instructions = [
+            "1. Навчіть модель на вкладці «Навчання моделі» (або завантажте saved_models/)",
+            "2. Введіть 8 показників на «Аналіз рослини» або оберіть шаблон класу",
+            "3. Натисніть «Аналізувати» — система покаже клас і впевненість",
+            "4. Для CSV з колонками як у датасеті — «Пакетний аналіз CSV»",
+            "5. Графіки та звіт — у папці results/",
+        ]
+        for line in instructions:
             tk.Label(inst_frame, text=line, bg=CARD, fg=TEXT, font=("Segoe UI", 10),
                      anchor="w", padx=12, pady=3).pack(fill="x")
 
-    # ==================== ІНШІ МЕТОДИ (БЕЗ ЗМІН) ====================
     def _build_predict_tab(self):
         p = self.tab_predict
         left = tk.Frame(p, bg=BG, width=420); left.pack(side="left", fill="y", padx=(0,6)); left.pack_propagate(False)
@@ -240,10 +295,18 @@ class PlantHealthApp(tk.Tk):
             tk.Label(row, text=hint, bg=CARD, fg=MUTED, font=("Segoe UI",8)).pack(side="left", padx=4)
             self.entries.append(var)
         
-        self.btn_analyze = tk.Button(left, text="  Аналізувати  ", bg=ACCENT, fg="white",
+        btn_frame = tk.Frame(left, bg=BG)
+        btn_frame.pack(fill="x", padx=8, pady=(10,0))
+
+        self.btn_analyze = tk.Button(btn_frame, text="  Аналізувати  ", bg=ACCENT, fg="white",
             font=("Segoe UI",11,"bold"), relief="flat", cursor="hand2",
             activebackground=ACCENT2, padx=10, pady=8, command=self._run_predict)
-        self.btn_analyze.pack(fill="x", padx=8, pady=(10,0))
+        self.btn_analyze.pack(side="left", fill="x", expand=True, padx=(0, 4))
+
+        self.btn_sensitivity = tk.Button(btn_frame, text="📊 Аналіз чутливості", bg="#1D9E75", fg="white",
+            font=("Segoe UI",11,"bold"), relief="flat", cursor="hand2",
+            activebackground="#1D9E75", padx=10, pady=8, command=self._open_sensitivity_analysis)
+        self.btn_sensitivity.pack(side="left", fill="x", expand=True, padx=(4, 0))
         self.result_frame = tk.Frame(right, bg=BG); self.result_frame.pack(fill="both", expand=True, padx=8, pady=8)
         self._show_placeholder()
 
@@ -357,12 +420,10 @@ class PlantHealthApp(tk.Tk):
             history_file = "results/prediction_history.json"
             history_data = []
             
-            # Load existing history if file exists
             if os.path.exists(history_file):
                 with open(history_file, 'r', encoding='utf-8') as f:
                     history_data = json.load(f)
             
-            # Add new prediction record
             record = {
                 "timestamp": datetime.datetime.now().isoformat(),
                 "input_values": {feat: val for feat, val in zip(FEATURE_COLS, values)},
@@ -406,6 +467,164 @@ class PlantHealthApp(tk.Tk):
         except Exception as e:
             self.after(0, lambda: messagebox.showerror("Помилка", str(e)))
 
+    def _open_sensitivity_analysis(self):
+        """Відкриває інтерактивне вікно аналізу чутливості обраної ознаки."""
+        if not self._model_loaded:
+            messagebox.showwarning("Модель не завантажена", "Спочатку навчіть або завантажте модель.")
+            return
+        try:
+            current_values = [float(v.get()) for v in self.entries]
+        except ValueError:
+            messagebox.showerror("Помилка", "Перевірте значення — мають бути числами.")
+            return
+
+        win = tk.Toplevel(self)
+        win.title("Аналіз чутливості моделі")
+        win.geometry("800x680")
+        win.configure(bg=BG)
+        win.transient(self)
+        win.grab_set()
+
+        lbl = tk.Label(win, text="📊 Аналіз чутливості передбачень до змін ознак",
+                       bg=BG, fg=ACCENT, font=("Segoe UI", 12, "bold"))
+        lbl.pack(pady=10)
+
+        sel_frame = tk.Frame(win, bg=BG)
+        sel_frame.pack(fill="x", padx=20)
+        tk.Label(sel_frame, text="Оберіть біосенсорний показник:", bg=BG, fg=TEXT, font=("Segoe UI", 10)).pack(side="left", padx=5)
+
+        feat_combo = ttk.Combobox(sel_frame, values=FEATURE_UA, state="readonly", width=30)
+        feat_combo.pack(side="left", padx=5)
+        feat_combo.current(0)
+
+        plot_frame = tk.Frame(win, bg=CARD, relief="flat", bd=1, highlightbackground=BORDER, highlightthickness=1)
+        plot_frame.pack(fill="both", expand=True, padx=20, pady=(6, 0))
+
+        from matplotlib.figure import Figure
+        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+        fig = Figure(figsize=(6.5, 4), dpi=100)
+        ax = fig.add_subplot(111)
+        canvas = FigureCanvasTkAgg(fig, master=plot_frame)
+        canvas.get_tk_widget().pack(fill="both", expand=True)
+
+        # --- Slider block ---
+        slider_frame = tk.Frame(win, bg=BG)
+        slider_frame.pack(fill="x", padx=20, pady=(4, 0))
+
+        slider_lbl = tk.Label(slider_frame, text="Поточне значення:", bg=BG, fg=TEXT, font=("Segoe UI", 9))
+        slider_lbl.pack(side="left", padx=(0, 6))
+
+        slider_val_lbl = tk.Label(slider_frame, text="", bg=BG, fg=ACCENT, font=("Segoe UI", 9, "bold"), width=10, anchor="w")
+        slider_val_lbl.pack(side="left")
+
+        slider_var = tk.DoubleVar()
+        slider = tk.Scale(
+            slider_frame,
+            variable=slider_var,
+            orient="horizontal",
+            showvalue=False,
+            bg=BG, fg=TEXT, troughcolor=CARD,
+            highlightthickness=0,
+            bd=0,
+        )
+        slider.pack(side="left", fill="x", expand=True, padx=6)
+
+        # Pre-computed curve cache (keyed by feat_idx)
+        _cache = {}
+
+        def _build_curves(feat_idx):
+            """Compute probability curves for all x across the feature range."""
+            lo, hi, _ = self.feature_ranges[feat_idx]
+            x_vals = np.linspace(lo, hi, 200)
+
+            test_inputs = np.array(
+                [current_values[:feat_idx] + [x] + current_values[feat_idx + 1:] for x in x_vals],
+                dtype=np.float32,
+            )
+            X_sc = self.scaler.transform(test_inputs)
+
+            from models.predictor import get_probabilities
+            mlp_probs = get_probabilities(self.model, X_sc)
+
+            final_probs_list = []
+            mlp_probs_list = []
+            for inp_val, m_prob in zip(test_inputs, mlp_probs):
+                res = classify(inp_val, m_prob, self.normal_ranges,
+                               class_means=self.class_means, class_stds=self.class_stds)
+                final_probs_list.append(res["final_probs"])
+                mlp_probs_list.append(m_prob)
+
+            return x_vals, np.array(final_probs_list), np.array(mlp_probs_list)
+
+        def _redraw_vline(feat_idx, curr_val, x_vals, final_probs_arr):
+            """Redraw only the vertical line — fast update on slider move."""
+            ax.clear()
+            lo, hi, _ = self.feature_ranges[feat_idx]
+
+            for c_idx, (name, color) in enumerate(zip(CLASS_NAMES, CLASS_COLORS)):
+                ax.plot(x_vals, final_probs_arr[:, c_idx] * 100, label=name, color=color, lw=2)
+
+            ax.axvline(x=curr_val, color="red", linestyle="--", alpha=0.8,
+                       label=f"Поточне ({_fmt_val(curr_val)})")
+            ax.set_title(f"Вплив ознаки '{FEATURE_UA[feat_idx]}' на класифікацію",
+                         fontsize=10, fontweight="bold")
+            ax.set_xlabel(FEATURE_UA[feat_idx], fontsize=9)
+            ax.set_ylabel("Ймовірність класу (%)", fontsize=9)
+            ax.set_ylim(-5, 105)
+            ax.set_xlim(lo, hi)
+            ax.legend(loc="best", fontsize=8)
+            ax.grid(True, linestyle=":", alpha=0.6)
+            fig.tight_layout()
+            canvas.draw_idle()
+
+        def _fmt_val(v):
+            if abs(v) >= 10 or v == 0:
+                return f"{v:.2f}"
+            return f"{v:.4f}"
+
+        def on_slider_move(*_):
+            feat_idx = feat_combo.current()
+            if feat_idx < 0 or feat_idx not in _cache:
+                return
+            curr_val = slider_var.get()
+            slider_val_lbl.config(text=_fmt_val(curr_val))
+            x_vals, final_probs_arr, _ = _cache[feat_idx]
+            _redraw_vline(feat_idx, curr_val, x_vals, final_probs_arr)
+
+        slider_var.trace_add("write", on_slider_move)
+
+        def update_plot(*args):
+            feat_idx = feat_combo.current()
+            if feat_idx < 0:
+                return
+
+            lo, hi, _ = self.feature_ranges[feat_idx]
+
+            # Reconfigure slider for this feature
+            slider.config(from_=lo, to=hi, resolution=(hi - lo) / 500)
+
+            init_val = float(np.clip(current_values[feat_idx], lo, hi))
+            slider_var.set(init_val)
+            slider_val_lbl.config(text=_fmt_val(init_val))
+
+            # Build / retrieve cached curves
+            if feat_idx not in _cache:
+                _cache[feat_idx] = _build_curves(feat_idx)
+
+            x_vals, final_probs_arr, _ = _cache[feat_idx]
+            _redraw_vline(feat_idx, init_val, x_vals, final_probs_arr)
+
+        feat_combo.bind("<<ComboboxSelected>>", update_plot)
+
+        # Info label
+        info_lbl = tk.Label(win,
+                            text="Перетягуйте слайдер — лінія рухається плавно без перерахунку кривих.",
+                            bg=BG, fg="#888888", font=("Segoe UI", 8))
+        info_lbl.pack(pady=(2, 8))
+
+        update_plot()
+
     def _build_train_tab(self):
         t=self.tab_train
         top=tk.Frame(t,bg=BG); top.pack(fill="x",padx=12,pady=10)
@@ -424,7 +643,6 @@ class PlantHealthApp(tk.Tk):
         batch_size = str(cfg.get("training", {}).get("batch_size", 32))
         lr = str(cfg.get("training", {}).get("learning_rate", 0.0008))
         patience = str(cfg.get("training", {}).get("patience", 15))
-        val_size = str(cfg.get("data", {}).get("val_size", 0.20))
         apply_smote = cfg.get("preprocessing", {}).get("apply_smote", True)
 
         card_data=self._card(top,"Датасет")
@@ -435,10 +653,7 @@ class PlantHealthApp(tk.Tk):
                  bg="#F0EFF8",highlightthickness=1,highlightbackground=BORDER).pack(side="left",padx=6)
         tk.Button(row1,text="Огляд…",bg=BG,fg=ACCENT,font=("Segoe UI",9),relief="flat",cursor="hand2",
                   command=self._browse_csv).pack(side="left")
-        tk.Label(card_data,
-                 text="Розбиття: 80/20 train/test (test ізольований). "
-                      "Валідація = 20% навчального пулу (64/16/20). SMOTE лише на train.",
-                 bg=CARD, fg=MUTED, font=("Segoe UI", 8), wraplength=520, justify="left").pack(anchor="w", pady=(4, 0))
+        val_split = cfg.get("training", {}).get("validation_split", 0.2)
 
         card_hp=self._card(top,"Гіперпараметри"); hp_grid=tk.Frame(card_hp,bg=CARD); hp_grid.pack(fill="x")
         params=[
@@ -446,7 +661,6 @@ class PlantHealthApp(tk.Tk):
             ("Batch size:", batch_size),
             ("Learning rate:", lr),
             ("Patience:", patience),
-            ("Val split:", val_size)
         ]
         self.hp_vars=[]
         for i, (label, default) in enumerate(params):
@@ -505,8 +719,8 @@ class PlantHealthApp(tk.Tk):
             if not os.path.exists(csv_src): self._log(f"[!] Файл не знайдено: {csv_src}","red"); return
             self._log(f"Датасет: {csv_src}","green")
             from preprocessing.loader import load_data
-            from preprocessing.splitter import split_from_config, format_split_summary
-            from preprocessing.scaler import fit_transform,transform,save_scaler
+            from preprocessing.splitter import split_from_config, format_split_summary, get_split_description
+            from preprocessing.scaler import fit_transform, transform, save_scaler
             from models.mlp_model import build_mlp
             from models.cnn_model import build_cnn
             from models.trainer import train_model
@@ -517,20 +731,20 @@ class PlantHealthApp(tk.Tk):
             from evaluation.error_analysis import analyze_errors
             from evaluation.arch_comparison import compare_architectures
             from evaluation.cross_val import cross_validate_mlp
-            from visualization.plots import plot_training_history,plot_class_distribution,plot_comparison_bar,plot_smote_comparison
+            from visualization.plots import plot_training_history, plot_class_distribution, plot_smote_comparison
             from visualization.feature_imp import plot_correlation_heatmap
             from visualization.roc_curves import plot_roc_curves
-            ablation_results = []
             with open("config.yaml") as f: config=yaml.safe_load(f)
             config["training"]["epochs"]=int(self.hp_vars[0].get())
             config["training"]["batch_size"]=int(self.hp_vars[1].get())
             config["training"]["learning_rate"]=float(self.hp_vars[2].get())
             config["training"]["patience"]=int(self.hp_vars[3].get())
-            config["data"]["val_size"]=float(self.hp_vars[4].get())
             config["data"]["path"]=csv_src
             config["preprocessing"]["apply_smote"]=self.var_smote.get()
-            with open("config.yaml", "w") as f:
-                yaml.safe_dump(config, f)
+            val_split = config.get("training", {}).get("validation_split", 0.2)
+            config["data"]["split_strategy"] = get_split_description(val_split)
+            with open("config.yaml", "w", encoding="utf-8") as f:
+                yaml.safe_dump(config, f, allow_unicode=True)
             os.makedirs("results",exist_ok=True); os.makedirs("saved_models",exist_ok=True)
             self._log("\n[1/8] Завантаження даних...","yellow")
             X,y,_=load_data(csv_src)
@@ -543,42 +757,30 @@ class PlantHealthApp(tk.Tk):
                 plot_correlation_heatmap(X, "results/correlation.png")
             except Exception as e:
                 self._log(f"[!] Помилка при збереженні correlation heatmap: {e}", "red")
-            self._log("\n[2/8] Розбиття 80/20 train/test + validation та нормалізація...","yellow")
-            X_train, X_val, X_test, y_train, y_val, y_test = split_from_config(X, y, config)
-            split_info = format_split_summary(y_train, y_val, y_test, config)
+            self._log("\n[2/8] Розбиття 80/20 train/test (sklearn train_test_split)...","yellow")
+            X_train, X_test, y_train, y_test = split_from_config(X, y, config)
+            split_info = format_split_summary(y_train, y_test, config)
             self._log(
                 f"  Train: {split_info['train']} ({split_info['train_pct']:.1f}%)  "
-                f"Val: {split_info['val']} ({split_info['val_pct']:.1f}%)  "
-                f"Test: {split_info['test']} ({split_info['test_pct']:.1f}% ізольована)",
+                f"Test: {split_info['test']} ({split_info['test_pct']:.1f}%)",
+                "green",
+            )
+            self._log(
+                f"  Val на графіках: validation_split={split_info['val_split']} (з train, не окремий файл)",
                 "green",
             )
             self._log(f"  Стратегія: {split_info['strategy']}", "green")
             
-            # Генеруємо графіки ДО та ПІСЛЯ SMOTE
-            self._log("  Генеруємо графіки розподілу класів ДО та ПІСЛЯ SMOTE...","yellow")
-            y_train_before_smote = y_train.copy()
-            smote_stats = {"applied": False, "before": {}, "after": {}}
             from preprocessing.augmentor import apply_smote
             from collections import Counter
-            
-            # Статистика ДО SMOTE
-            train_counts_before = Counter(y_train_before_smote)
-            smote_stats["before"] = {int(k): int(v) for k, v in train_counts_before.items()}
-            
-            try:
-                X_train_smote, y_train_smote = apply_smote(X_train, y_train_before_smote, random_state=config["data"].get("random_state", 42))
-                train_counts_after = Counter(y_train_smote)
-                smote_stats["after"] = {int(k): int(v) for k, v in train_counts_after.items()}
-                smote_stats["applied"] = True
-                plot_smote_comparison(y_train_before_smote, y_train_smote, "results/smote_comparison.png")
-                self._log(f"  ✓ Графік SMOTE (до/після): results/smote_comparison.png","green")
-            except Exception as e:
-                self._log(f"  [!] Помилка при генеруванні SMOTE графіку: {e}","red")
-            
-            self._log("  Scaler fit — лише на train; SMOTE — лише на train; class weights — у trainer.py","green")
-            X_train_sc,scaler=fit_transform(X_train)
-            X_val_sc=transform(X_val,scaler)
-            X_test_sc=transform(X_test,scaler)
+
+            smote_stats = {"applied": False, "before": {}, "after": {}}
+            smote_stats["before"] = {int(k): int(v) for k, v in Counter(y_train).items()}
+
+            self._log("  Scaler fit — лише на train; SMOTE — лише на train","green")
+            X_train_sc, scaler = fit_transform(X_train)
+            X_test_sc = transform(X_test, scaler)
+            save_scaler(scaler, "saved_models/scaler.pkl")
             self._log("\n[3/8] Навчання MLP...","yellow")
             mlp=build_mlp(input_dim=X_train_sc.shape[1],hidden_layers=[128,64,32],dropout=0.3,
                           learning_rate=config["training"]["learning_rate"])
@@ -591,106 +793,48 @@ class PlantHealthApp(tk.Tk):
                     s.app._log(f"  Epoch {epoch+1:>3} | loss={logs.get('loss',0):.4f} | acc={logs.get('accuracy',0):.4f} | val_loss={logs.get('val_loss',0):.4f} | val_acc={logs.get('val_accuracy',0):.4f}")
                     s.app.lbl_epoch.configure(text=f"Epoch {epoch+1} | val_acc={logs.get('val_accuracy',0):.4f}")
             
-            # Застосовуємо SMOTE до масштабованих даних
-            X_train_for_model = X_train_sc
-            y_train_for_model = y_train
+            X_train_for_model, y_train_for_model = X_train_sc, y_train
             if config["preprocessing"]["apply_smote"]:
                 self._log("  Застосовуємо SMOTE до train даних...", "yellow")
-                X_train_for_model, y_train_for_model = apply_smote(X_train_sc, y_train, random_state=config["data"].get("random_state", 42))
-                self._log(f"  ✓ SMOTE завершена: train розміри {X_train_for_model.shape}", "green")
+                X_train_for_model, y_train_for_model = apply_smote(
+                    X_train_sc, y_train, random_state=config["data"].get("random_state", 42))
+                smote_stats["applied"] = True
+                smote_stats["after"] = {int(k): int(v) for k, v in Counter(y_train_for_model).items()}
+                try:
+                    plot_smote_comparison(y_train, y_train_for_model, "results/smote_comparison.png")
+                    self._log("  ✓ Графік SMOTE: results/smote_comparison.png", "green")
+                except Exception as e:
+                    self._log(f"  [!] Помилка SMOTE графіку: {e}", "red")
+                self._log(f"  ✓ SMOTE: {X_train_for_model.shape[0]} зразків", "green")
                     
-            history=train_model(mlp,X_train_for_model,y_train_for_model,X_val_sc,y_val,config,"saved_models/mlp_best.keras",
+            history=train_model(mlp,X_train_for_model,y_train_for_model,None,None,config,"saved_models/mlp_best.keras",
                                 custom_callbacks=[UICallback(self)])
             plot_training_history(history,"results/training_history_mlp.png")
-            self._log("\n[4/8] Оцінювання на валідаційній вибірці...","yellow")
-            y_proba=mlp.predict(X_val_sc,verbose=0); y_pred=np.argmax(y_proba,axis=1)
+            self._log("\n[4/8] Оцінювання на тестовій вибірці (20%)...","yellow")
+            y_proba=mlp.predict(X_test_sc,verbose=0); y_pred=np.argmax(y_proba,axis=1)
             from sklearn.metrics import accuracy_score,f1_score,roc_auc_score
-            acc=accuracy_score(y_val,y_pred); f1=f1_score(y_val,y_pred,average="weighted")
-            try: auc=roc_auc_score(y_val,y_proba,multi_class="ovr",average="weighted")
+            acc=accuracy_score(y_test,y_pred); f1=f1_score(y_test,y_pred,average="weighted")
+            try: auc=roc_auc_score(y_test,y_proba,multi_class="ovr",average="weighted")
             except: auc=0.0
-            self._log(f"\n  Val Accuracy: {acc:.4f}","green")
-            self._log(f"  Val F1:       {f1:.4f}","green")
-            self._log(f"  Val ROC-AUC:  {auc:.4f}","green")
-            plot_confusion_matrix(y_val,y_pred,"results/confusion_matrix.png")
-            roc_res=plot_roc_curves(y_val,y_proba,"results/roc_curves.png")
+            self._log(f"\n  Test Accuracy: {acc:.4f}","green")
+            self._log(f"  Test F1:       {f1:.4f}","green")
+            self._log(f"  Test ROC-AUC:  {auc:.4f}","green")
+            plot_confusion_matrix(y_test,y_pred,"results/confusion_matrix.png")
+            roc_res=plot_roc_curves(y_test,y_proba,"results/roc_curves.png")
             self._log(f"  AUC micro={roc_res['auc_micro']:.4f}  macro={roc_res['auc_macro']:.4f}","green")
-            err=analyze_errors(X_val_sc,y_val,y_pred,y_proba,save_dir="results")
+            err=analyze_errors(X_test_sc,y_test,y_pred,y_proba,save_dir="results")
             self._log(f"  Помилок: {err['n_errors']} ({err['error_rate']*100:.1f}%)","green")
             self._log("\n[5/8] Порівняння MLP vs CNN...","yellow")
             _mlp2=build_mlp(input_dim=X_train_sc.shape[1],hidden_layers=[128,64,32],dropout=0.3,
                             learning_rate=config["training"]["learning_rate"])
             _cnn=build_cnn(input_dim=X_train_sc.shape[1],learning_rate=config["training"]["learning_rate"])
-            arch=compare_architectures({"MLP":_mlp2,"CNN":_cnn},X_train_sc,y_train,X_val_sc,y_val,
-                                       X_val_sc,y_val,config,save_dir="results")
+            arch=compare_architectures({"MLP":_mlp2,"CNN":_cnn},X_train_sc,y_train,None,None,
+                                       X_test_sc,y_test,config,save_dir="results")
             for aname,ares in arch.items():
                 self._log(f"  {aname}: acc={ares['accuracy']:.4f}  f1={ares['f1_weighted']:.4f}","green")
             
-            self._log("\n[6/8] Ablation експерименти...","yellow")
-            from tensorflow.keras import layers, models, regularizers
-            ablation_results = []
-            ablation_configs = [
-                ("mlp_basic", {"use_class_weight": False, "l2_reg": 0.0, "dropout": 0.0}),
-                ("mlp_class_weights", {"use_class_weight": True, "l2_reg": 0.0, "dropout": 0.0}),
-                ("mlp_full", {"use_class_weight": True, "l2_reg": 1e-4, "dropout": config["model"].get("dropout", 0.3)}),
-            ]
-            
-            for ablation_name, ablation_cfg in ablation_configs:
-                try:
-                    self._log(f"  • Експеримент: {ablation_name}...", "yellow")
-                    # Будуємо модель з параметрами ablation
-                    l2_reg = ablation_cfg.get("l2_reg", 1e-4)
-                    dropout = ablation_cfg.get("dropout", 0.3)
-                    
-                    abl_model = models.Sequential([
-                        layers.Dense(128, activation="relu", kernel_regularizer=regularizers.l2(l2_reg) if l2_reg > 0 else None, input_shape=(X_train_sc.shape[1],)),
-                        layers.BatchNormalization(),
-                        layers.Dropout(dropout) if dropout > 0 else layers.Lambda(lambda x: x),
-                        layers.Dense(64, activation="relu", kernel_regularizer=regularizers.l2(l2_reg) if l2_reg > 0 else None),
-                        layers.BatchNormalization(),
-                        layers.Dropout(dropout) if dropout > 0 else layers.Lambda(lambda x: x),
-                        layers.Dense(32, activation="relu", kernel_regularizer=regularizers.l2(l2_reg) if l2_reg > 0 else None),
-                        layers.BatchNormalization(),
-                        layers.Dropout(dropout) if dropout > 0 else layers.Lambda(lambda x: x),
-                        layers.Dense(len(np.unique(y)), activation="softmax")
-                    ])
-                    abl_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config["training"]["learning_rate"]),
-                                      loss="sparse_categorical_crossentropy", metrics=["accuracy"])
-                    
-                    # Обчислюємо class_weight якщо потрібно
-                    abl_class_weight = None
-                    if ablation_cfg.get("use_class_weight", False):
-                        classes = np.unique(y_train)
-                        total = len(y_train)
-                        abl_class_weight = {int(c): float(total / (len(classes) * np.sum(y_train == c))) for c in classes}
-                    
-                    # Тренуємо модель
-                    abl_callbacks = [
-                        tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=config["training"]["patience"], restore_best_weights=True, verbose=0),
-                        tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=config["training"].get("reduce_patience", 7), verbose=0),
-                    ]
-                    abl_model.fit(X_train_sc, y_train, validation_data=(X_val_sc, y_val),
-                                  epochs=config["training"]["epochs"], batch_size=config["training"]["batch_size"],
-                                  callbacks=abl_callbacks, class_weight=abl_class_weight, verbose=0)
-                    
-                    # Оцінюємо на VAL
-                    abl_y_proba = abl_model.predict(X_val_sc, verbose=0)
-                    abl_y_pred = np.argmax(abl_y_proba, axis=1)
-                    abl_metrics = evaluate(y_val, abl_y_pred, abl_y_proba)
-                    
-                    ablation_results.append({
-                        "name": ablation_name,
-                        "accuracy": float(abl_metrics["accuracy"]),
-                        "f1_weighted": float(abl_metrics["f1_weighted"]),
-                        "f1_macro": float(abl_metrics["f1_macro"]),
-                        "roc_auc": float(abl_metrics.get("roc_auc", 0.0)),
-                        "config": ablation_cfg
-                    })
-                    self._log(f"    ✓ {ablation_name}: acc={abl_metrics['accuracy']:.4f} f1={abl_metrics['f1_weighted']:.4f}", "green")
-                except Exception as e:
-                    self._log(f"    [!] Помилка в {ablation_name}: {e}", "red")
-            
             self._log("\n[7/8] Baseline порівняння...", "yellow")
-            baseline=train_baselines(X_train_sc,y_train,X_val_sc,y_val,"saved_models")
+            baseline=train_baselines(X_train_sc,y_train,X_test_sc,y_test,"saved_models")
             for name,res in baseline.items():
                 self._log(f"  {name:<22} acc={res['accuracy']:.4f}  f1={res['f1_weighted']:.4f}")
             self._log("\n[7/8] 5-кратна крос-валідація...","yellow")
@@ -702,26 +846,17 @@ class PlantHealthApp(tk.Tk):
             self._log(f"  CV F1:       {cv['f1_mean']:.4f} ± {cv['f1_std']:.4f}","green")
             
             self._log("\n[8/8] Генерування звіту...","yellow")
-            metrics_val=evaluate(y_val,y_pred,y_proba)
+            metrics_test=evaluate(y_test,y_pred,y_proba)
             
-            # Evaluate on ISOLATED test set
-            self._log("  Оцінювання на ізольованої тестовій вибірці...","yellow")
-            y_test_pred = np.argmax(mlp.predict(X_test_sc, verbose=0), axis=1)
-            y_test_proba = mlp.predict(X_test_sc, verbose=0)
-            metrics_test=evaluate(y_test,y_test_pred,y_test_proba)
-            self._log(f"  Test Accuracy: {metrics_test['accuracy']:.4f}","green")
-            self._log(f"  Test F1:       {metrics_test['f1_weighted']:.4f}","green")
-            self._log(f"  Test ROC-AUC:  {metrics_test['roc_auc']:.4f}","green")
-            
-            save_report(metrics_val,cv,baseline,"results/report.json",
-                extra={"test_metrics": metrics_test,  # Add test metrics to report
+            save_report(metrics_test,cv,baseline,"results/report.json",
+                extra={
                        "roc_curves":roc_res,"error_analysis":err,
                        "arch_comparison":{n:{k:v for k,v in r.items() if k not in ("history","y_pred","y_proba")}
                                           for n,r in arch.items()},
-                       "ablation": {"experiments": ablation_results} if ablation_results else {},
-                       "split":{"train":len(y_train),"val":len(y_val),"test":len(y_test),
-                               "split_strategy":config["data"].get("split_strategy",
-                                   "80/20 (test isolated); val=20% of train pool → 64/16/20"),
+                       "split":{"train":len(y_train),"test":len(y_test),
+                               "validation_split":config["training"].get("validation_split", 0.2),
+                               "split_strategy":get_split_description(
+                                   config["training"].get("validation_split", 0.2)),
                                "dataset":csv_src},
                        "smote": smote_stats,
                        "visualizations": {
@@ -735,14 +870,11 @@ class PlantHealthApp(tk.Tk):
                        }})
             self._log("  Звіт збережено: results/report.json","green")
             self._log("\n"+"="*50,"bold"); self._log("  Навчання завершено успішно!","green"); self._log("="*50,"bold")
-            if ablation_results:
-                self._log(f"\n  📊 Ablation результати ({len(ablation_results)} експериментів):", "green")
-                for ablation in ablation_results:
-                    self._log(f"    • {ablation['name']}: accuracy={ablation['accuracy']:.4f}, f1={ablation['f1_weighted']:.4f}", "green")
             self.scaler=scaler; self.model=mlp; self._model_loaded=True
             self._load_dataset_context()
+            self.after(0, self._refresh_info_tab)
             self.lbl_model_status.configure(text="● модель завантажена",fg="#CCFFCC")
-            messagebox.showinfo("Готово",f"Навчання завершено!\n\nVal Accuracy: {acc:.4f}\nVal F1: {f1:.4f}\nVal ROC-AUC: {auc:.4f}\nTest Accuracy: {metrics_test['accuracy']:.4f}\nTest ROC-AUC: {metrics_test['roc_auc']:.4f}\nCV Accuracy: {cv['accuracy_mean']:.4f}±{cv['accuracy_std']:.4f}\n\nРезультати в папці results/")
+            messagebox.showinfo("Готово",f"Навчання завершено!\n\nTest Accuracy: {acc:.4f}\nTest F1: {f1:.4f}\nTest ROC-AUC: {auc:.4f}\nCV Accuracy: {cv['accuracy_mean']:.4f}±{cv['accuracy_std']:.4f}\n\nРезультати в папці results/")
         except Exception as e:
             import traceback; self._log(f"\n[ПОМИЛКА] {e}","red"); self._log(traceback.format_exc(),"red")
             messagebox.showerror("Помилка навчання",str(e))

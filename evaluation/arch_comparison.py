@@ -16,16 +16,28 @@ def compare_architectures(models_dict, X_train, y_train, X_val, y_val, X_test, y
         cw = {c: total/(len(classes)*np.sum(y_train==c)) for c in classes}
         t0 = time.time()
         
-        has_val = Xv is not None and y_val is not None
+        has_explicit_val = Xv is not None and y_val is not None
+        val_split = config.get("training", {}).get("validation_split", 0.2)
+        use_val_split = not has_explicit_val and val_split and val_split > 0
+        has_val = has_explicit_val or use_val_split
         monitor_loss = "val_loss" if has_val else "loss"
-        
-        history = model.fit(Xtr, y_train, validation_data=(Xv, y_val) if has_val else None,
-            epochs=config["training"]["epochs"], batch_size=config["training"]["batch_size"],
+
+        fit_kwargs = dict(
+            epochs=config["training"]["epochs"],
+            batch_size=config["training"]["batch_size"],
             class_weight=cw,
-            callbacks=[EarlyStopping(monitor=monitor_loss, patience=config["training"]["patience"],
-                                     restore_best_weights=True, verbose=0),
-                       ReduceLROnPlateau(monitor=monitor_loss, factor=0.5, patience=7, verbose=0)],
-            verbose=0)
+            callbacks=[
+                EarlyStopping(monitor=monitor_loss, patience=config["training"]["patience"],
+                              restore_best_weights=True, verbose=0),
+                ReduceLROnPlateau(monitor=monitor_loss, factor=0.5, patience=7, verbose=0),
+            ],
+            verbose=0,
+        )
+        if has_explicit_val:
+            fit_kwargs["validation_data"] = (Xv, y_val)
+        elif use_val_split:
+            fit_kwargs["validation_split"] = val_split
+        history = model.fit(Xtr, y_train, **fit_kwargs)
         train_time = time.time() - t0
         y_proba = model.predict(Xte, verbose=0); y_pred = np.argmax(y_proba, axis=1)
         acc = accuracy_score(y_test, y_pred); f1w = f1_score(y_test, y_pred, average="weighted")

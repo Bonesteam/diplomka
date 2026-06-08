@@ -1,38 +1,11 @@
-"""
-АРХІТЕКТУРА КЛАСИФІКАЦІЇ:
-
-Система двоходова класифікації для діагностики стану рослини:
-
-1. МОДЕЛЬ (Нейронна мережа MLP)
-   - Входи: 8 біосенсорних показників (нормалізовані)
-   - Виходи: 4 ймовірності для класів (softmax + temperature scaling)
-   - Структура: [128 -> 64 -> 32] нейронів з ReLU
-   - Training: SMOTE для балансування, class_weights для рідких класів
-   - Prediction: сирі softmax-ймовірності моделі (без штучного згладжування)
-
-2. АНАЛІЗ ПОКАЗНИКІВ (Feature-based analysis)
-   - Порівнює кожен показник з профілем здорової рослини
-   - Статус: "ok", "borderline", "deviation" + вага severity
-   - Усі 8 показників впливають на класифікацію через злиття з профілями класів
-
-3. ЗЛИТТЯ ЙМОВІРНОСТЕЙ (model + features)
-   - 78% — нейромережа, 22% — відповідність профілю класу (усі 8 ознак)
-   - Червоні/жовті прапорці мають більшу вагу, зелені — меншу, але теж враховуються
-   - Попередження про конфлікти — у UI, без різкої зміни класу
-
-4. СИСТЕМА ПОПЕРЕДЖЕНЬ
-   - Показує конфлікти між моделлю та показниками
-   - Пояснює коли результат невпевнений або парадоксальний
-
-РЕЗУЛЬТАТ: Комбінована оцінка яка враховує і нейронну мережу, і біосенсорні показники
-"""
+"""Гібридна класифікація: MLP (78%) + відповідність профілю класу за 8 показниками (22%)."""
 import numpy as np
 
 NORM_MARGIN_FRAC = 0.20
 LOW_CONFIDENCE = 65.0
 CLOSE_MARGIN = 0.15
 HEALTHY_CLASS = 3
-MODEL_BLEND_WEIGHT = 0.78  # частка нейромережі; решта — усі 8 біосенсорів
+MODEL_BLEND_WEIGHT = 0.78  # частка нейромережі; решта — профілі 8 біосенсорів
 
 DEFAULT_NORMAL_RANGES = [
     (39.25, 58.65, "профіль здорової: 39–59"),
@@ -141,14 +114,27 @@ def count_clear_deviations(statuses):
     return sum(1 for s, _ in statuses if s == "deviation")
 
 
-def compute_class_profiles(df, feature_cols, target_col, n_classes=4):
-    """Середнє та σ кожного класу — для злиття з показниками."""
+def compute_class_profiles(df, feature_cols, target_col, n_classes=4, regularization_factor=0.15):
+    """
+    Середнє та σ кожного класу — для злиття з показниками.
+    Застосовує згладжування дисперсії (Variance Smoothing / Shrinkage)
+    для запобігання надмірної чутливості до дрібних змін.
+    """
     means = np.zeros((n_classes, len(feature_cols)), dtype=np.float64)
     stds = np.zeros((n_classes, len(feature_cols)), dtype=np.float64)
+    
+    global_stds = df[feature_cols].std().values
+    
     for c in range(n_classes):
         sub = df[df[target_col] == c][feature_cols]
-        means[c] = sub.mean().values
-        stds[c] = np.maximum(sub.std().values, 1e-6)
+        class_means = sub.mean().values
+        class_stds = sub.std().values
+        
+        # Обмежуємо стандартне відхилення знизу як відсоток від глобального стандартного відхилення
+        smoothed_stds = np.maximum(class_stds, regularization_factor * global_stds)
+        
+        means[c] = class_means
+        stds[c] = np.maximum(smoothed_stds, 1e-6)
     return means, stds
 
 
@@ -185,50 +171,6 @@ def model_confidence(probs):
     p = np.asarray(probs, dtype=np.float64)
     p = p / p.sum()
     return float(p.max() * 100.0)
-
-
-def apply_feature_boosting(model_probs, n_deviations, model_cls=None):
-    """
-    Корекція лише при явному конфлікті між моделлю та показниками.
-    У звичайних випадках повертає сирі ймовірності моделі без змін.
-
-    Класи: 0=критичний, 1=помірний, 2=легкий, 3=здорова.
-    """
-    p = np.asarray(model_probs, dtype=np.float64)
-    p = p / p.sum()
-
-    if model_cls is None:
-        model_cls = int(np.argmax(p))
-
-    STRESS_CLASSES = [0, 1, 2]  # критичний, помірний, легкий
-    leading_stress = max(STRESS_CLASSES, key=lambda c: p[c])
-
-    # Конфлікт 1: модель каже «здорова», але багато відхилень від еталону
-    if model_cls == HEALTHY_CLASS and n_deviations >= 3:
-        boost_table = {3: 1.4, 4: 1.7, 5: 2.0}
-        boost_factor = boost_table.get(n_deviations, 2.5 if n_deviations >= 6 else 1.4)
-        healthy_penalty = max(0.10, 0.55 - 0.10 * n_deviations)
-
-        target_stress = leading_stress
-        # Багато відхилень + провідний легкий стрес → підозра на критичний
-        if n_deviations >= 5 and leading_stress == 2:
-            target_stress = 0
-
-        p_boosted = p.copy()
-        p_boosted[target_stress] *= boost_factor
-        p_boosted[HEALTHY_CLASS] *= healthy_penalty
-        return p_boosted / p_boosted.sum()
-
-    # Конфлікт 2: багато відхилень, модель не вважає критичним
-    if n_deviations >= 6 and model_cls != 0:
-        p_boosted = p.copy()
-        if leading_stress == 2:
-            p_boosted[0] *= 1.4
-        else:
-            p_boosted[leading_stress] *= 1.25
-        return p_boosted / p_boosted.sum()
-
-    return p
 
 
 def classify(values, model_probs, normal_ranges, class_means=None, class_stds=None,

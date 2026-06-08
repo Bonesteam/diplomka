@@ -30,24 +30,6 @@ def plot_class_distribution(y, title="Розподіл класів", save_path=
     plt.tight_layout(); plt.savefig(save_path, dpi=150, bbox_inches="tight"); plt.close()
     print(f"Збережено: {save_path}")
 
-def plot_comparison_bar(metrics_nn, baseline_results, save_path="results/comparison.png"):
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    names = ["MLP (нейромережа)"] + list(baseline_results.keys())
-    accs = [metrics_nn["accuracy"]] + [v["accuracy"] for v in baseline_results.values()]
-    f1s  = [metrics_nn["f1_weighted"]] + [v["f1_weighted"] for v in baseline_results.values()]
-    x = np.arange(len(names)); w = 0.35
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.bar(x-w/2, accs, w, label="Accuracy", color="#4C72B0")
-    ax.bar(x+w/2, f1s,  w, label="F1 (weighted)", color="#DD8452")
-    ax.set_xticks(x); ax.set_xticklabels(names, rotation=15, ha="right")
-    ax.set_ylim(0, 1.1); ax.set_ylabel("Значення метрики"); ax.set_title("Порівняння методів класифікації")
-    ax.legend(); ax.grid(axis="y", alpha=0.3)
-    for i, (a, f) in enumerate(zip(accs, f1s)):
-        ax.text(i-w/2, a+0.01, f"{a:.3f}", ha="center", fontsize=8)
-        ax.text(i+w/2, f+0.01, f"{f:.3f}", ha="center", fontsize=8)
-    plt.tight_layout(); plt.savefig(save_path, dpi=150, bbox_inches="tight"); plt.close()
-    print(f"Збережено: {save_path}")
-
 def plot_smote_comparison(y_before, y_after, save_path="results/smote_comparison.png"):
     """Порівняння розподілу класів до та після SMOTE."""
     from preprocessing.loader import CLASS_NAMES

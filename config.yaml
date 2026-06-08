@@ -1,11 +1,8 @@
 data:
   path: plant_health_biosensor_dataset.csv
   random_state: 42
-  split_strategy: "80/20 (test isolated); val=20% of train pool \u0432\u2020\u2019\
-    \ 64/16/20"
+  split_strategy: 80/20 train/test (train_test_split); val-криві через Keras validation_split=0.2
   test_size: 0.2
-  train_size: 0.64
-  val_size: 0.16
 model:
   activation: relu
   dropout: 0.3
@@ -23,7 +20,8 @@ preprocessing:
   smote_only_to_train: true
 training:
   batch_size: 32
-  epochs: 50
+  epochs: 20
   learning_rate: 0.001
   patience: 7
   reduce_patience: 5
+  validation_split: 0.2
