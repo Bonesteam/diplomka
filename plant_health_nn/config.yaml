@@ -1,0 +1,27 @@
+data:
+  path: plant_health_biosensor_dataset.csv
+  random_state: 42
+  split_strategy: 80/20 train/test (train_test_split); val-криві через Keras validation_split=0.2
+  test_size: 0.2
+model:
+  activation: relu
+  dropout: 0.3
+  hidden_layers:
+  - 128
+  - 64
+  - 32
+  type: mlp
+paths:
+  results: results/
+  saved_models: saved_models/
+preprocessing:
+  apply_smote: true
+  scaler: standard
+  smote_only_to_train: true
+training:
+  batch_size: 32
+  epochs: 20
+  learning_rate: 0.001
+  patience: 7
+  reduce_patience: 5
+  validation_split: 0.2
