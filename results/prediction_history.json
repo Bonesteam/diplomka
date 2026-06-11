@@ -1549,5 +1549,26 @@
       "Легкий стрес": 0.8750170654781448,
       "Здорова рослина": 0.057931909942012104
     }
+  },
+  {
+    "timestamp": "2026-06-11T16:00:06.366439",
+    "input_values": {
+      "fluorescence_intensity": 52.03,
+      "colorimetric_index": 0.5,
+      "spr_signal_strength": 89.48,
+      "leaf_temperature": 24.47,
+      "chlorophyll_content": 43.6,
+      "moisture_level": 20.33,
+      "light_absorption_ratio": 0.74,
+      "volatile_organic_compounds": 14.51
+    },
+    "predicted_class": "Легкий стрес",
+    "confidence": 87.12915507588016,
+    "class_probabilities": {
+      "Критичний стрес": 0.0399311948260163,
+      "Помірний стрес": 0.03062350975639609,
+      "Легкий стрес": 0.8712915507588016,
+      "Здорова рослина": 0.05815374465878602
+    }
   }
 ]
